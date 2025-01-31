@@ -1,13 +1,8 @@
 [
-    {
-      "maxAgeSeconds": 3600,
-      "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      "origin": [
-        "http://localhost:5500",  
-        "https://a6c9-177-236-35-65.ngrok-free.app", 
-        "https://imanolsilva.github.io"
-      ],
-      "responseHeader": ["Content-Type", "Authorization"]
-    }
-  ]
-  
+  {
+    "origin": ["*"],
+    "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+    "responseHeader": ["Content-Type", "Access-Control-Allow-Origin", "X-Goog-AuthUser"],
+    "maxAgeSeconds": 3600
+  }
+]

@@ -23,26 +23,34 @@
             padding: 0;
         }
 
-        /* Navbar */
-        .navbar {
+        /* Navbar personalizado */
+        .navbar-custom {
             background-color: #E6007E; /* Rosa */
         }
 
+        /* Estilo del logo */
         .navbar-brand {
             font-size: 1.8rem;
             font-weight: bold;
             color: white;
         }
 
+        /* Estilo de los enlaces del menú */
         .navbar-nav .nav-link {
             color: white;
             font-size: 1rem;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .navbar-nav .nav-link:hover {
             color: #000000;
-            background-color: #fff;
+            background-color: #ffffff;
             border-radius: 5px;
+        }
+
+        /* Estilo para el ícono del toggler */
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255, 255, 255, 1%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
         }
 
         /* Sección Principal */
@@ -68,9 +76,7 @@
         .hero-content p {
             font-size: 1.2rem;
             margin: 20px 0;
-            opacity: 0;
-            animation: fadeIn 2s forwards;
-            animation-delay: 1s;
+            /* Eliminado efecto de opacidad y animación para mejor compatibilidad */
         }
 
         .hero-content button {
@@ -88,6 +94,15 @@
             background-color: #000000;
         }
 
+        /* Efecto Typewriter - Rosa Brillante */
+        .typewriter-text {
+            color: #FF69B4; /* Rosa Brillante */
+            text-shadow: 0 0 5px rgba(255, 105, 180, 0.8),
+                         0 0 10px rgba(255, 105, 180, 0.6),
+                         0 0 20px rgba(255, 105, 180, 0.4);
+            font-weight: 600;
+        }
+
         /* Animaciones */
         @keyframes fadeIn {
             0% {
@@ -100,61 +115,22 @@
             }
         }
 
-        /* Estilo para el menú hamburguesa */
-        .navbar-toggler {
-            border: none;
-        }
-
-        .navbar-toggler-icon {
-            background-color: white;
-        }
-
-        /* Menú en pantallas pequeñas */
-        .dropdown {
-            display: none;
-            background-color: #E6007E;
-            padding: 10px;
-        }
-
-        .dropdown.show {
-            display: block;
-        }
-
-        .dropdown a {
-            color: white;
-            text-decoration: none;
-            font-size: 1.2rem;
-            padding: 10px;
-            display: block;
-            text-align: center;
-        }
-
-        .dropdown a:hover {
-            background-color: #000000;
-        }
-
+        /* Ajustes para pantallas pequeñas */
         @media (max-width: 768px) {
-            .dropdown {
-                display: none;
-            }
-
-            .dropdown.show {
-                display: block;
-            }
-
-            .navbar-toggler-icon {
-                background-color: #E6007E;
+            .navbar-nav .nav-link {
+                font-size: 1.2rem;
+                padding: 10px 15px;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- NAVBAR MEJORADO -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
             <!-- LOGO -->
-            <a class="navbar-brand ms-auto" href="Inicio.html">Sistema <span>Liverpool</span></a>
+            <a class="navbar-brand" href="Inicio.html">Sistema <span>Liverpool</span></a>
 
             <!-- HAMBURGER ICON (En pantallas pequeñas) -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -162,35 +138,35 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- LINKS DEL MENÚ (Solo visible en pantallas grandes) -->
+            <!-- LINKS DEL MENÚ (Visible en todas las pantallas, colapsable en pequeñas) -->
             <div class="collapse navbar-collapse" id="navbarNav">
-              <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                  <a class="nav-link active" href="Inicio.html">
-                    <i class="bi bi-house-door-fill"></i> Inicio
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="index.html">
-                    <i class="bi bi-plus-circle"></i> Registro Saldos
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="reportes.html">
-                    <i class="bi bi-file-earmark-text"></i> Rechazos
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="inventarios.html">
-                    <i class="bi bi-box"></i> Inventarios
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="configuracion.html">
-                    <i class="bi bi-gear-fill"></i> Configuración
-                  </a>
-                </li>
-              </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="Inicio.html">
+                            <i class="bi bi-house-door-fill"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-plus-circle"></i> Checar Precios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reportes.html">
+                            <i class="bi bi-file-earmark-text"></i> Rechazos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="inventarios.html">
+                            <i class="bi bi-box"></i> Inventarios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="configuracion.html">
+                            <i class="bi bi-gear-fill"></i> Configuración
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
@@ -259,21 +235,22 @@
 
         AOS.init();
 
-        // Efecto typewriter
+        // Efecto typewriter con rosa brillante
         const texts = [
-            "Registrar Saldos",
+            "Verificación de Precios",
             "Controlar Rechazos",
             "Gestionar Inventarios",
             "Configurar Sistema"
         ];
+
         let speed = 100;
-        const textElements = document.querySelector(".typewriter-text");
+        const textElement = document.querySelector(".typewriter-text");
         let textIndex = 0;
         let charcterIndex = 0;
 
         function typeWriter() {
             if (charcterIndex < texts[textIndex].length) {
-                textElements.innerHTML += texts[textIndex].charAt(charcterIndex);
+                textElement.innerHTML += texts[textIndex].charAt(charcterIndex);
                 charcterIndex++;
                 setTimeout(typeWriter, speed);
             } else {
@@ -282,8 +259,8 @@
         }
 
         function eraseText() {
-            if (textElements.innerHTML.length > 0) {
-                textElements.innerHTML = textElements.innerHTML.slice(0, -1);
+            if (textElement.innerHTML.length > 0) {
+                textElement.innerHTML = textElement.innerHTML.slice(0, -1);
                 setTimeout(eraseText, 50);
             } else {
                 textIndex = (textIndex + 1) % texts.length;

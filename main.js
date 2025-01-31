@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("correoUsuario").innerText = user.email;
 
       // Determinar si es el admin (UID = "OaieQ6cGi7TnW0nbxvlk2oyLaER2")
-      if (user.uid === "OaieQ6cGi7TnW0nbxvlk2oyLaER2") {
+      if (user.uid === "OaieQ6cGi7TnW0nbxvlk2oyLaER2","doxhVo1D3aYQqqkqgRgfJ4qcKcU2") {
         isAdmin = true;
         console.log("El usuario actual es ADMIN");
       } else {
@@ -472,36 +472,65 @@ function renderRechazos(rechazosFiltrados) {
         <strong>Remisión:</strong> ${remision}
       </button>
     `;
-
-    // Contenido colapsable
     const collapseDiv = document.createElement("div");
     collapseDiv.id = collapseId;
     collapseDiv.className = "accordion-collapse collapse";
     collapseDiv.setAttribute("aria-labelledby", headingId);
-
+    
     // Cuerpo
     const body = document.createElement("div");
     body.className = "accordion-body";
-
+    
+    // Generar la URL de la imagen dinámica con la sección
+    defaultImageUrl = "https://www.liverpool.com.mx/img/unavailable.jpg"; // Imagen válida
+    
+    // Generar variaciones hacia arriba y hacia abajo para el SKU
+    const generateSkuVariations = (sku) => {
+      const variations = [sku];
+      const baseSku = parseInt(sku, 10); // Convertir a número entero
+      for (let i = 1; i <= 100; i++) { // Probar 100 números hacia arriba y hacia abajo
+        variations.push((baseSku + i).toString());
+        variations.push((baseSku - i).toString());
+      }
+      return variations;
+    };
+    
+    const skuVariations = generateSkuVariations(sku);
+    const imageUrls = skuVariations.map(variation => `https://ss${seccion}.liverpool.com.mx/xl/${variation}.jpg`);
+    const searchUrl = `https://www.liverpool.com.mx/tienda?s=${sku}`;
+    const googleSearchUrl = `https://www.google.com/search?q=site:liverpool.com.mx+${sku}`;
+    
     body.innerHTML = `
       <div class="mb-2 text-muted">
         <i class="bi bi-calendar2 icon-pink"></i> <strong>Fecha:</strong> ${fecha}
       </div>
-
+    
       <p class="mb-2">
         <i class="bi bi-diagram-2 icon-pink"></i>
         <strong>Sección:</strong> ${seccion} <br>
-
+    
         <i class="bi bi-tags icon-pink"></i>
         <strong>SKU:</strong> ${sku} <br>
-
+    
         <i class="bi bi-person icon-pink"></i>
         <strong>Usuario:</strong> ${usuario} <br>
-
+    
         <i class="bi bi-person-gear icon-pink"></i>
         <strong>Jefe:</strong> ${jefe}
       </p>
-
+      
+      <div class="text-center mb-3">
+        <img id="img-${sku}" src="${imageUrls[0]}" alt="Imagen del artículo" class="img-fluid" style="max-width: 200px; display: none;">
+        <div id="no-image-${sku}" class="no-image" style="display: none; text-align: center; font-weight: bold; padding: 10px; border: 2px dashed #ff4081; color: #ff4081; border-radius: 10px;">
+          Imagen no disponible. Por favor, presiona <a href="${searchUrl}" target="_blank">Buscar en Liverpool</a> para verificar la información.
+        </div>
+      </div>
+    
+      <div class="text-center mb-3">
+            <a href="${searchUrl}" target="_blank" class="btn btn-outline-secondary">Buscar en Liverpool</a>
+        <a href="${googleSearchUrl}" target="_blank" class="btn btn-outline-danger">Buscar en Google</a>
+      </div>
+    
       <label 
         for="comentario-${rechazo._rowIndex}"
         class="form-label fw-semibold"
@@ -516,6 +545,43 @@ function renderRechazos(rechazosFiltrados) {
         data-row-index="${rechazo._rowIndex}"
       >${comentarios}</textarea>
     `;
+    
+    collapseDiv.appendChild(body);
+    item.appendChild(header);
+    item.appendChild(collapseDiv);
+    accordion.appendChild(item);
+    rechazosContainer.appendChild(accordion);
+    
+    // Validar la imagen después de agregarla al DOM
+    const imgElement = document.getElementById(`img-${sku}`);
+    const noImageElement = document.getElementById(`no-image-${sku}`);
+    
+    let currentIndex = 0;
+    const tryNextImage = () => {
+      if (currentIndex < imageUrls.length) {
+        imgElement.src = imageUrls[currentIndex];
+        currentIndex++;
+      } else {
+        imgElement.onerror = null;
+        imgElement.style.display = 'none';
+        noImageElement.style.display = 'block';
+      }
+    };
+    
+    imgElement.onerror = tryNextImage;
+    imgElement.onload = function() {
+      if (imgElement.src.includes(sku)) {
+        this.style.display = 'block';
+        noImageElement.style.display = 'none';
+      } else {
+        tryNextImage();
+      }
+    };
+    
+    // Iniciar la primera búsqueda de imagen
+    tryNextImage();
+    
+    
 
     collapseDiv.appendChild(body);
     item.appendChild(header);

@@ -5,101 +5,150 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de SKUs Escaneados - Página Protegida</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-  <!-- Bootstrap CSS -->
+  <!-- Fuentes y Bootstrap -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
   <!-- Select2 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
   <!-- Select2 Bootstrap 5 Tema Opcional -->
   <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
   <!-- jQuery (Necesario para Select2) -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
   <!-- Select2 JS -->
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- SheetJS -->
+  <!-- SheetJS (Para Excel) -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/shim.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
   <style>
-    /* Estilo general */
+    /* ==================== Variables de Color ==================== */
+    :root {
+      --rosa-principal: #E6007E;
+      --rosa-secundario: #F8BBD0;
+      --negro: #000000;
+      --blanco: #ffffff;
+      --gris-oscuro: #333333;
+      --gris-claro: #f8f9fa;
+      --texto-secundario: #f8f9fa; /* Gris claro para texto fuera del contenedor principal */
+    }
+
+    /* ==================== Estilo General ==================== */
     body {
-      background: linear-gradient(to right, #E6007E, #000000); /* Rosa degradado */
       font-family: 'Poppins', Arial, sans-serif;
+      background: linear-gradient(to right, var(--rosa-principal), var(--negro));
       margin: 0;
       padding: 0;
       color: #333;
       line-height: 1.6;
+      min-height: 100vh;
     }
 
-    /* Encabezado */
+    /* ==================== Header ==================== */
     header {
-      background-color: #0f0c0e; /* Rosa */
-      color: white;
+      background-color: var(--rosa-principal); /* Mismo fondo que "Reportes" */
+      color: var(--blanco);
+      padding: 10px 20px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       position: sticky;
       top: 0;
       z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       transition: background-color 0.3s ease;
     }
 
     .header-title {
-      font-size: 1.8rem;
-      font-weight: 700;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
     }
 
+    /* Botón Menú Hamburguesa (Igual que Reportes) */
     .btn-menu {
       font-size: 1.5rem;
       background: transparent;
-      color: white;
+      color: #ffffff;
       border: none;
       cursor: pointer;
     }
 
-    /* Botones */
-    .btn {
-      background-color: #E6007E; /* Rosa */
-      color: white;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 12px;
+    /* ==================== Botón Cerrar Sesión ==================== */
+    #logout-btn {
       font-size: 1rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+      background-color: #c82333; /* Rojo oscuro */
+      border: none;
+      color: #ffffff;
     }
 
-    .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    #logout-btn:hover {
+      background-color: #a71d2a;
+      color: #ffffff;
     }
 
-    .btn-danger {
-      background-color: #dc3545; /* Rosa */
+    /* ==================== Menú Lateral (Offcanvas) ==================== */
+    .offcanvas {
+      background-color: var(--rosa-principal); /* Fondo igual a la página de Reportes */
+      color: var(--blanco);
     }
 
-    .btn-danger:hover {
-      background-color: #c82333;
+    .offcanvas-title {
+      font-size: 1.3rem;
+      font-weight: 600;
     }
 
-    /* Contenedor principal */
+    .nav-link {
+      color: var(--blanco);
+      font-size: 1rem;
+      padding: 0.75rem 1.5rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background-color: var(--rosa-secundario);
+      color: var(--gris-oscuro);
+    }
+
+    .btn-close {
+      filter: brightness(0) invert(1);
+    }
+
+    /* ==================== Contenedor Principal ==================== */
     .main-container {
       max-width: 900px;
       margin: 2rem auto;
       padding: 1.5rem;
-      background: white;
+      background: var(--blanco);
       border-radius: 16px;
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
       animation: fadeIn 0.6s ease-in-out;
     }
 
-    /* Tarjetas */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==================== Tarjetas ==================== */
     .card {
       border: none;
       border-radius: 16px;
@@ -111,7 +160,7 @@
       padding: 1.5rem;
     }
 
-    /* Formularios */
+    /* ==================== Formularios ==================== */
     .form-control {
       border-radius: 12px;
       border: 1px solid #ddd;
@@ -120,23 +169,23 @@
     }
 
     .form-control:focus {
-      border-color: #E6007E; /* Rosa */
+      border-color: var(--rosa-principal);
       box-shadow: 0 0 6px rgba(232, 62, 140, 0.2);
     }
 
     .form-label {
       font-size: 1rem;
-      color: #E6007E; /* Rosa */
+      color: var(--rosa-principal);
       font-weight: bold;
     }
 
-    /* Área de carga de archivos */
+    /* ==================== Dropzone ==================== */
     #dropzone {
-      border: 2px dashed #E6007E; /* Rosa */
+      border: 2px dashed var(--rosa-principal);
       border-radius: 12px;
       text-align: center;
       padding: 2rem;
-      color: #E6007E; /* Rosa */
+      color: var(--rosa-principal);
       cursor: pointer;
       transition: background-color 0.3s ease, transform 0.3s ease;
     }
@@ -151,70 +200,7 @@
       margin-bottom: 1rem;
     }
 
-    /* Menú lateral */
-    .offcanvas {
-      background-color: #E6007E; /* Rosa */
-      color: white;
-    }
-
-    .offcanvas-title {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-
-    .nav-link {
-      color: white;
-      font-size: 1.2rem;
-      padding: 0.8rem;
-      transition: background-color 0.3s ease;
-    }
-
-    .nav-link:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-close {
-      filter: brightness(0) invert(1);
-    }
-
-    /* Botones de acción */
-    #descargarBtn {
-      background-color: #28a745;
-      transition: background-color 0.3s ease, transform 0.3s ease;
-    }
-
-    #descargarBtn:hover {
-      background-color: #218838;
-      transform: translateY(-2px);
-    }
-
-    #borrarBtn {
-      background-color: #dc3545;
-      transition: background-color 0.3s ease, transform 0.3s ease;
-    }
-
-    #borrarBtn:hover {
-      background-color: #c82333;
-      transform: translateY(-2px);
-    }
-
-    /* Transiciones y animaciones */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.6s ease-in-out;
-    }
-
-    /* Tablas */
+    /* ==================== Tablas ==================== */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -228,14 +214,42 @@
     }
 
     th {
-      background-color: #E6007E; /* Rosa */
-      color: white;
+      background-color: var(--rosa-principal);
+      color: #ffffff;
     }
 
-    /* Diseño Responsivo */
+    /* ==================== Botones de Acción ==================== */
+    .btn {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    #descargarBtn {
+      background-color: #28a745;
+    }
+
+    #descargarBtn:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+    }
+
+    #borrarBtn {
+      background-color: #dc3545;
+    }
+
+    #borrarBtn:hover {
+      background-color: #c82333;
+      transform: translateY(-2px);
+    }
+
+    /* ==================== Responsividad ==================== */
     @media (max-width: 768px) {
       .header-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
       }
       .btn {
         padding: 0.7rem 1rem;
@@ -248,9 +262,13 @@
         font-size: 1rem;
         padding: 0.6rem 1rem;
       }
+      #logout-btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+      }
     }
 
-    /* Estilos para los botones de iconos en la lista de archivos */
+    /* Ajustes de lista de archivos y botones */
     .list-group-item .btn {
       width: 40px;
       height: 40px;
@@ -264,60 +282,47 @@
       font-size: 1.2rem;
     }
 
-    /* Asegurar que el nombre del archivo no se superponga con los botones */
     .list-group-item div {
       flex: 1;
       text-align: left;
       margin-right: 10px;
-      word-break: break-all; /* Para romper líneas largas */
+      word-break: break-all;
     }
 
-    /* Ajustes adicionales para mejorar la responsividad */
     @media (max-width: 576px) {
       .list-group-item {
         flex-direction: column;
         align-items: flex-start;
       }
-
       .list-group-item div {
         margin-bottom: 10px;
       }
-
       .list-group-item .btn {
         width: 35px;
         height: 35px;
       }
-
       .list-group-item .btn i {
         font-size: 1rem;
       }
     }
 
-    /* Estilos para Input Groups */
+    /* Input Group (Icono) */
     .input-group .input-group-text {
-      background-color: #E6007E; /* Rosa */
-      color: white; /* Color del icono */
+      background-color: var(--rosa-principal);
+      color: #ffffff;
     }
 
     .input-group .input-group-text i {
       font-size: 1.2rem;
     }
 
-    /* Botón Cerrar Sesión en pantallas pequeñas */
-    @media (max-width: 768px) {
-      #logout-btn {
-        width: auto;
-        font-size: 0.9rem;
-        padding: 0.5rem 1rem;
-      }
-    }
-
   </style>
 </head>
 <body>
-  <!-- Encabezado con botón de menú hamburguesa y botón de cerrar sesión -->
+  <!-- Encabezado (Header) -->
   <header class="d-flex justify-content-between align-items-center px-4 py-3">
     <div class="d-flex align-items-center">
+      <!-- Botón Menú Hamburguesa -->
       <button 
         class="btn-menu me-3"
         type="button"
@@ -328,19 +333,20 @@
       >
         <i class="bi bi-list"></i>
       </button>
-      <div class="header-title">Saldos</div>
+      <!-- Título -->
+      <div class="header-title">Verificar</div>
     </div>
-    <!-- Botón de Cerrar Sesión -->
+    <!-- Botón de Cerrar Sesión con ícono de apagado (bi-power) -->
     <button 
       class="btn btn-danger d-flex align-items-center"
       id="logout-btn"
       aria-label="Cerrar sesión"
     >
-      <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+      <i class="bi bi-power"></i>
     </button>
   </header>
 
-  <!-- Menú Lateral Offcanvas -->
+  <!-- Menú Lateral Offcanvas (Igual que el de Reportes) -->
   <div 
     class="offcanvas offcanvas-start"
     tabindex="-1"
@@ -357,13 +363,13 @@
       ></button>
     </div>
     <div class="offcanvas-body p-0">
-      <!-- Contenido del menú lateral -->
+      <!-- Navegación (Igual que Reportes) -->
       <nav class="nav flex-column">
         <a class="nav-link active" href="Inicio.html">
           <i class="bi bi-house-door-fill me-2"></i> Inicio
         </a>
         <a class="nav-link" href="index.html">
-          <i class="bi bi-plus-circle me-2"></i> Registrar Saldos
+          <i class="bi bi-plus-circle me-2"></i> Checar Precios
         </a>
         <a class="nav-link" href="reportes.html">
           <i class="bi bi-file-earmark-text me-2"></i> Rechazos
@@ -378,7 +384,7 @@
     </div>
   </div>
 
-  <!-- Contenedor principal -->
+  <!-- Contenedor Principal -->
   <div class="main-container">
     <!-- SECCION REGISTRO DE ARCHIVOS (Solo Admins) -->
     <div class="row" id="adminUploadSection" style="display: none;">
@@ -402,7 +408,7 @@
       </div>
     </div>
 
-    <!-- USUARIOS: Elige un archivo subido -->
+    <!-- SECCIÓN ELIGE ARCHIVO SUBIDO (Usuarios) -->
     <div 
       class="row justify-content-center"
       id="userFilePickerSection"
@@ -431,7 +437,7 @@
       </div>
     </div>
 
-    <!-- Registrar SKU -->
+    <!-- SECCIÓN REGISTRAR SKU -->
     <div id="seccionRegistro" style="display: none;">
       <div class="row justify-content-center">
         <div class="col-md-6">
@@ -461,16 +467,19 @@
                     type="submit"
                     class="btn btn-primary"
                   >
-                    <i class="bi bi-search me-2"></i> Buscar y Registrar
+                    <i class="bi bi-search me-2"></i> VERIFICAR
                   </button>
                 </div>
               </form>
-              <div id="resultado"></div>
+              <!-- Mensaje de Resultado -->
+              <div id="resultado" class="mt-3"></div>
+
+              <!-- Botones de Acción (Descargar / Borrar) -->
               <div class="d-grid mt-3">
                 <button class="btn btn-success mb-2" id="descargarBtn" disabled>
                   <i class="bi bi-download me-2"></i> Descargar Registro Actualizado
                 </button>
-                <!-- Botón para borrar datos (Solo Admins) -->
+                <!-- Botón para Borrar Datos (Solo Admins) -->
                 <button class="btn btn-danger" id="borrarBtn" style="display: none;">
                   <i class="bi bi-trash me-2"></i> Borrar Datos Registrados
                 </button>
@@ -480,7 +489,7 @@
         </div> <!-- col-md-6 -->
       </div>
     </div> <!-- seccionRegistro -->
-  </div> <!-- .main-container -->
+  </div> <!-- main-container -->
 
   <!-- Modal para Seleccionar Archivos -->
   <div class="modal fade" id="fileSelectionModal" tabindex="-1" aria-labelledby="fileSelectionModalLabel" aria-hidden="true">
@@ -503,14 +512,8 @@
     </div>
   </div>
 
-  <!-- Modal Asignar Usuarios (Opcional) -->
-
-
   <!-- Bootstrap JS Bundle (Incluye Popper) -->
-  <script 
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    defer
-  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
 
   <!-- Firebase Scripts (Cargados antes de dashboard.js) -->
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app-compat.js" defer></script>
@@ -518,7 +521,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-storage-compat.js" defer></script>
 
-  <!-- Script JS para la página protegida -->
+  <!-- Script para la Lógica de la Página Protegida -->
   <script src="dashboard.js" defer></script>
 </body>
 </html>
