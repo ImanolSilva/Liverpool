@@ -24,37 +24,41 @@
       --blanco: #ffffff;
       --gris-oscuro: #333333;
       --gris-claro: #f8f9fa;
-      --texto-secundario: #f8f9fa; /* Gris claro para texto fuera del contenedor principal */
     }
-
     /* Estilo general */
     body {
       font-family: 'Poppins', Arial, sans-serif;
-      background: linear-gradient(to bottom right, var(--rosa-principal), var(--negro));
+      background: linear-gradient(to right, var(--rosa-principal), var(--negro));
       margin: 0;
       padding: 0;
-      color: var(--texto-secundario);
-      overflow-x: hidden;
+      color: var(--gris-oscuro);
       min-height: 100vh;
     }
-
     /* Header */
     header {
-      background-color: var(--rosa-principal); /* Fondo rosa */
+      background-color: var(--rosa-principal);
       color: var(--blanco);
       padding: 10px 20px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       position: sticky;
       top: 0;
       z-index: 1000;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: background-color 0.3s ease;
     }
-
     .header-title {
       font-size: 1.5rem;
       font-weight: 600;
+      margin: 0;
+    }
+    .btn-menu {
+      font-size: 1.5rem;
+      background: transparent;
+      color: #fff;
+      border: none;
+      cursor: pointer;
     }
 
     /* Botón de Cerrar Sesión */
@@ -75,6 +79,14 @@
       background-color: #a71d2a;
       color: #ffffff;
     }
+    .has-comment {
+  background-color: #d4edda; /* Verde claro para el textarea */
+}
+
+.has-comment-header {
+  background-color: #d4edda !important; /* Verde claro para el encabezado */
+  /* Puedes ajustar padding, borde, etc., si lo deseas */
+}
 
     /* Menú Lateral */
     .offcanvas {
@@ -242,22 +254,19 @@
 </head>
 <body>
   <!-- Header -->
-  <header class="d-flex justify-content-between align-items-center">
+  <header class="d-flex justify-content-between align-items-center px-4 py-3">
     <div class="d-flex align-items-center">
-      <!-- Botón del Menú Lateral -->
-      <button class="btn btn-outline-light me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral">
+      <button class="btn-menu me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral">
         <i class="bi bi-list"></i>
       </button>
-      <!-- Título del Header -->
-      <div class="header-title">Reportes</div>
+      <div class="header-title">Verificar</div>
     </div>
-    <!-- Botón de Cerrar Sesión -->
-    <button class="btn btn-danger d-flex align-items-center" id="logout-btn" aria-label="Cerrar sesión" data-bs-toggle="tooltip" title="Cerrar Sesión">
+    <button class="btn btn-danger d-flex align-items-center" id="logout-btn" aria-label="Cerrar sesión">
       <i class="bi bi-power"></i>
     </button>
   </header>
 
-  <!-- Menú Lateral Offcanvas -->
+  <!-- Offcanvas (Menú Lateral) -->
   <div class="offcanvas offcanvas-start" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="menuLateralLabel">Menú</h5>
@@ -265,21 +274,11 @@
     </div>
     <div class="offcanvas-body p-0">
       <nav class="nav flex-column">
-        <a class="nav-link active" href="Inicio.html">
-          <i class="bi bi-house-door-fill me-2"></i> Inicio
-        </a>
-        <a class="nav-link" href="index.html">
-          <i class="bi bi-plus-circle me-2"></i> Checar Precios
-        </a>
-        <a class="nav-link" href="reportes.html">
-          <i class="bi bi-file-earmark-text me-2"></i> Rechazos
-        </a>
-        <a class="nav-link" href="inventarios.html">
-          <i class="bi bi-box me-2"></i> Inventarios
-        </a>
-        <a class="nav-link" href="configuracion.html">
-          <i class="bi bi-gear-fill me-2"></i> Configuración
-        </a>
+        <a class="nav-link active" href="Inicio.html"><i class="bi bi-house-door-fill me-2"></i> Inicio</a>
+        <a class="nav-link" href="index.html"><i class="bi bi-plus-circle me-2"></i> Checar Precios</a>
+        <a class="nav-link" href="reportes.html"><i class="bi bi-file-earmark-text me-2"></i> Rechazos</a>
+        <a class="nav-link" href="Inventarios.html"><i class="bi bi-box me-2"></i> Inventarios</a>
+        <a class="nav-link" href="configuracion.html"><i class="bi bi-gear-fill me-2"></i> Configuración</a>
       </nav>
     </div>
   </div>

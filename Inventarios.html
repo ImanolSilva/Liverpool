@@ -3,31 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-  <title>Inventario Rápido Liverpool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventario Rápido - Con Marbetes</title>
 
   <!-- Fuentes y Bootstrap -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
-    rel="stylesheet"
-  />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
 
   <!-- SweetAlert2 -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.19/dist/sweetalert2.min.css"
-  />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.19/dist/sweetalert2.min.css" />
 
   <!-- SheetJS y Firebase -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -46,32 +31,39 @@
       --blanco: #ffffff;
       --gris-oscuro: #333333;
       --gris-claro: #f8f9fa;
-      --texto-secundario: #f8f9fa;
     }
     body {
-      font-family: "Poppins", Arial, sans-serif;
+      font-family: 'Poppins', Arial, sans-serif;
       background: linear-gradient(to right, var(--rosa-principal), var(--negro));
       margin: 0;
       padding: 0;
-      min-height: 100vh;
       color: var(--gris-oscuro);
+      min-height: 100vh;
     }
     header {
       background-color: var(--rosa-principal);
       color: var(--blanco);
       padding: 10px 20px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       position: sticky;
       top: 0;
       z-index: 1000;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: background-color 0.3s ease;
     }
     .header-title {
       font-size: 1.5rem;
       font-weight: 600;
       margin: 0;
+    }
+    .btn-menu {
+      font-size: 1.5rem;
+      background: transparent;
+      color: #fff;
+      border: none;
+      cursor: pointer;
     }
     #logout-btn {
       font-size: 1rem;
@@ -84,10 +76,10 @@
       background-color: #c82333;
       border: none;
       color: #ffffff;
+      cursor: pointer;
     }
     #logout-btn:hover {
       background-color: #a71d2a;
-      color: #ffffff;
     }
     .offcanvas {
       background-color: var(--rosa-principal);
@@ -123,6 +115,7 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    /* Estilos para Dropzone */
     #dropzone {
       border: 2px dashed var(--rosa-principal);
       border-radius: 12px;
@@ -144,228 +137,359 @@
     #dropzone:hover {
       background-color: #fff5f7;
     }
-    @media (max-width: 768px) {
+    /* Sección de edición manual */
+    #manualEditSection {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid var(--rosa-secundario);
+      border-radius: 10px;
+      background-color: var(--gris-claro);
+    }
+    #manualEditSection h4 {
+      margin-bottom: 1rem;
+    }
+    /* Botón para eliminar archivo (solo admin) */
+    #deleteFileBtn {
+      margin-top: 1rem;
+    }
+    /* Estilos para que las tablas se adapten en móviles (apiladas) */
+    @media (max-width: 576px) {
+      .main-container {
+        padding: 1rem;
+        margin: 1rem;
+      }
       .header-title {
         font-size: 1.2rem;
       }
       #logout-btn {
-        font-size: 0.9rem;
         padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
       }
       .nav-link {
         padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+      }
+      input, select, button {
         font-size: 0.9rem;
+      }
+      /* Transformar las tablas en bloques */
+      .table thead {
+        display: none;
+      }
+      .table, .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+      }
+      .table tr {
+        margin-bottom: 15px;
+      }
+      .table td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid #ddd;
+      }
+      .table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 45%;
+        padding-left: 15px;
+        font-weight: bold;
+        text-align: left;
       }
     }
   </style>
 </head>
-
-<body>
-  <!-- Encabezado -->
-  <header class="d-flex justify-content-between align-items-center">
+  <!-- Header -->
+  <header class="d-flex justify-content-between align-items-center px-4 py-3">
     <div class="d-flex align-items-center">
-      <button
-        class="btn btn-outline-light me-3"
-        type="button"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#menuLateral"
-        aria-controls="menuLateral"
-      >
+      <button class="btn-menu me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral">
         <i class="bi bi-list"></i>
       </button>
-      <div class="header-title">Inventario Rápido</div>
+      <div class="header-title">Inventarios</div>
     </div>
-    <button
-      class="btn btn-danger d-flex align-items-center"
-      id="logout-btn"
-      aria-label="Cerrar Sesión"
-      onclick="logout()"
-    >
+    <button class="btn btn-danger d-flex align-items-center" id="logout-btn" aria-label="Cerrar sesión">
       <i class="bi bi-power"></i>
     </button>
   </header>
 
-  <!-- Menú Lateral Offcanvas -->
-  <div
-    class="offcanvas offcanvas-start"
-    tabindex="-1"
-    id="menuLateral"
-    aria-labelledby="menuLateralLabel"
-  >
+  <!-- Offcanvas (Menú Lateral) -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="menuLateralLabel">Menú</h5>
-      <button
-        type="button"
-        class="btn-close text-reset"
-        data-bs-dismiss="offcanvas"
-        aria-label="Cerrar"
-      ></button>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
     </div>
     <div class="offcanvas-body p-0">
       <nav class="nav flex-column">
-        <a class="nav-link active" href="Inicio.html">
-          <i class="bi bi-house-door-fill me-2"></i> Inicio
-        </a>
-        <a class="nav-link" href="index.html">
-          <i class="bi bi-plus-circle me-2"></i> Checar Precios
-        </a>
-        <a class="nav-link" href="reportes.html">
-          <i class="bi bi-file-earmark-text me-2"></i> Rechazos
-        </a>
-        <a class="nav-link" href="inventarios.html">
-          <i class="bi bi-box me-2"></i> Inventarios
-        </a>
-        <a class="nav-link" href="configuracion.html">
-          <i class="bi bi-gear-fill me-2"></i> Configuración
-        </a>
+        <a class="nav-link active" href="Inicio.html"><i class="bi bi-house-door-fill me-2"></i> Inicio</a>
+        <a class="nav-link" href="index.html"><i class="bi bi-plus-circle me-2"></i> Checar Precios</a>
+        <a class="nav-link" href="reportes.html"><i class="bi bi-file-earmark-text me-2"></i> Rechazos</a>
+        <a class="nav-link" href="Inventarios.html"><i class="bi bi-box me-2"></i> Inventarios</a>
+        <a class="nav-link" href="configuracion.html"><i class="bi bi-gear-fill me-2"></i> Configuración</a>
       </nav>
     </div>
   </div>
 
   <!-- Contenedor Principal -->
   <div class="main-container">
-    <h2 class="text-center mb-4">Control de Inventario</h2>
-
-    <!-- Dropzone -->
-    <div
-      id="dropzone"
-      ondragover="dragOver(event)"
-      ondragleave="dragLeave(event)"
-      ondrop="handleFileDrop(event)"
-    >
-      <i class="bi bi-cloud-upload"></i>
-      <p class="mb-0">
-        Arrastra y suelta aquí el archivo<br />
-        <strong>Inventario_*.xlsx</strong> para subirlo
-      </p>
+    <h2 class="text-center mb-4">Control de Inventario - Marbetes</h2>
+    
+    <!-- Sección para subida de archivos (solo Admins) -->
+    <div id="adminUploadSection" style="display: none;">
+      <h4 class="mb-3">Subir Archivo (Solo Admins)</h4>
+      <div class="mb-3">
+        <label for="bossUploadSelect" class="form-label">Selecciona el Jefe al que pertenece el archivo:</label>
+        <select id="bossUploadSelect" class="form-select">
+          <option value="">Seleccione un jefe</option>
+          <!-- Opciones se llenan mediante JavaScript -->
+        </select>
+      </div>
+      <div id="dropzone">
+        <i class="bi bi-cloud-upload"></i>
+        <p class="mb-0">
+          Arrastra y suelta aquí el archivo<br />
+          <strong>Inventario_*.xlsx</strong> para subirlo
+        </p>
+      </div>
+      <hr />
     </div>
-
-    <!-- Seleccionar Archivo -->
-    <div class="mb-3">
-      <label for="fileList" class="form-label"
-        >Selecciona el archivo de inventario:</label
-      >
-      <select id="fileList" class="form-select" onchange="loadSelectedFile()">
-        <option value="">Seleccione un archivo</option>
-      </select>
-    </div>
-
-    <!-- Escanear SKU -->
-    <div class="mb-3 mt-4">
-      <label for="scanInput" class="form-label"
-        >Escanea un código / SKU / Europeo:</label
-      >
-      <div class="input-group">
-        <input
-          type="text"
-          id="scanInput"
-          class="form-control"
-          placeholder="Ej. 1234567890"
-          oninput="handleScan(this)"
-        />
-        <div class="input-group-text">
-          <input
-            type="checkbox"
-            id="locationCheckbox"
-            aria-label="Ubicación: Piso o Bodega"
-          />
-          <span class="ms-2">Piso</span>
+    
+    <!-- Sección para ver inventarios (para todos) -->
+    <div id="inventoryViewSection">
+      <div class="row g-2">
+        <div class="col-md-8">
+          <label for="fileList" class="form-label">Selecciona el archivo de inventario:</label>
+          <select id="fileList" class="form-select">
+            <option value="">Seleccione un archivo</option>
+          </select>
         </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <!-- Botón para eliminar archivo (solo admins) -->
+          <button class="btn btn-danger w-100" id="deleteFileBtn" style="display: none;">Eliminar Archivo</button>
+        </div>
+      </div>
+      <div class="mb-3 mt-2">
+        <label for="bossFilterSelect" class="form-label">Filtrar archivos por jefe:</label>
+        <select id="bossFilterSelect" class="form-select">
+          <option value="Todos">Todos</option>
+          <!-- Opciones se llenan mediante JavaScript -->
+        </select>
+      </div>
+      <!-- Asignar marbete y escanear SKU -->
+      <div class="mb-3">
+        <label for="marbeteInput" class="form-label">Asignar Marbete (Formato: SECCION_NUMERO, ej: 251_01):</label>
+        <div class="input-group">
+          <input type="text" id="marbeteInput" class="form-control" placeholder="Ej: 251_01" />
+          <button class="btn btn-secondary btn-lg" id="setMarbeteBtn">
+            <i class="bi bi-check2-circle me-1"></i> Confirmar
+          </button>
+        </div>
+      </div>
+      <div class="mb-3 mt-4">
+        <label for="scanInput" class="form-label">Escanea un código / SKU:</label>
+        <div class="input-group">
+          <input type="text" id="scanInput" class="form-control" placeholder="Ej: 1234567890" />
+          <div class="input-group-text">
+            <input type="checkbox" id="locationCheckbox" aria-label="Ubicación: Piso o Bodega" />
+            <span class="ms-2">Piso</span>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <button class="btn btn-primary btn-lg" id="saveDataBtn">Guardar Cambios</button>
+        <button class="btn btn-success btn-lg" id="downloadBtn">Descargar Inventario</button>
+        <button class="btn btn-warning btn-lg" id="viewSheetBtn">Ver Inventarios</button>
       </div>
     </div>
 
-    <!-- Botones -->
-    <button class="btn btn-primary mt-3" onclick="saveData()">
-      Guardar Cambios
-    </button>
-    <button class="btn btn-success mt-3 ms-2" onclick="downloadInventario()">
-      Descargar Inventario
-    </button>
-    <button class="btn btn-warning mt-3 ms-2" onclick="viewSheet()">
-      Ver Inventarios
-    </button>
+    <!-- Sección de Edición Manual de Registros -->
+    <div id="manualEditSection">
+      <h4 class="mb-3">Edición Manual de Registros</h4>
+      <div class="mb-3">
+        <label for="manualMarbeteSearch" class="form-label">Buscar Marbete (ej: 251_01):</label>
+        <div class="input-group">
+          <input type="text" id="manualMarbeteSearch" class="form-control" placeholder="Ingresa el marbete a buscar" />
+          <button class="btn btn-info" id="searchMarbeteBtn">Buscar</button>
+        </div>
+      </div>
+      <div id="manualEditResults">
+        <!-- Se mostrará la tabla editable -->
+      </div>
+      <button class="btn btn-primary mt-3" id="saveManualBtn">Guardar Cambios Manuales</button>
+    </div>
   </div>
 
+  <!-- Scripts de la aplicación -->
   <script>
-    // ========== CONFIGURACIÓN FIREBASE ==========
+    "use strict";
+    // ------------------------- CONFIGURACIÓN FIREBASE -------------------------
     const firebaseConfig = {
-  apiKey: "AIzaSyA_4H46I7TCVLnFjet8fQPZ006latm-mRE",
-  authDomain: "loginliverpool.firebaseapp.com",
-  projectId: "loginliverpool",
-  storageBucket: "loginliverpool.appspot.com",
-  messagingSenderId: "704223815941",
-  appId: "1:704223815941:web:c871525230fb61caf96f6c",
-  measurementId: "G-QFEPQ4TSPY",
-};
+      apiKey: "AIzaSyA_4H46I7TCVLnFjet8fQPZ006latm-mRE",
+      authDomain: "loginliverpool.firebaseapp.com",
+      projectId: "loginliverpool",
+      storageBucket: "loginliverpool.appspot.com",
+      messagingSenderId: "704223815941",
+      appId: "1:704223815941:web:c871525230fb61caf96f6c",
+      measurementId: "G-QFEPQ4TSPY",
+    };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const storage = firebase.app().storage("gs://loginliverpool.firebasestorage.app");
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-    let workbook;           
-    let selectedFileName;   
-    // HOJA "Inventarios" => un array JSON con { SKU, EUROPEO, DESCRIPCION, CANTIDAD_INVENTARIO, (nuevas) PISO, BODEGA, AJUSTE }
-    let invDataArr = [];  // Al leer la hoja, convertimos a un array con .sheet_to_json
-
-    // ========== DRAG & DROP ==========
-    function dragOver(e) {
-      e.preventDefault();
-      e.currentTarget.classList.add("dragover");
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
-    function dragLeave(e) {
-      e.preventDefault();
-      e.currentTarget.classList.remove("dragover");
+    const storage = firebase.app().storage("gs://loginliverpool.firebasestorage.app");
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // ------------------------- RESTRICCIÓN DE ACCESO -------------------------
+    // Si no hay usuario autenticado, se muestra una alerta y se redirige a "login.html"
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        Swal.fire({
+          icon: "warning",
+          title: "No has iniciado sesión",
+          text: "Debes iniciar sesión para acceder a esta página.",
+          confirmButtonText: "Ir al inicio de sesión",
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        }).then(() => {
+          window.location.href = "login.html";
+        });
+      } else {
+        // Si el usuario está autenticado, se procede a configurar la interfaz según su rol.
+        if (adminUIDs.includes(user.uid)) {
+          document.getElementById("adminUploadSection").style.display = "block";
+          document.getElementById("deleteFileBtn").style.display = "block";
+        } else {
+          document.getElementById("adminUploadSection").style.display = "none";
+          document.getElementById("deleteFileBtn").style.display = "none";
+        }
+      }
+    });
+
+    // ------------------------- LISTAS DE ADMIN Y JEFES -------------------------
+    const adminUIDs = [
+      "OaieQ6cGi7TnW0nbxvlk2oyLaER2",
+      "V3gs0U4nKVeIZHvXEfIiNLXq2Sy1",
+      "doxhVo1D3aYQqqkqgRgfJ4qcKcU2"
+    ];
+
+    const bosses = [
+      "Irene Rojas",
+      "Adriana Prieto",
+      "Alejandro Morales",
+      "Alfredo Encinas",
+      "Ana Vazquez",
+      "Beatriz Herrera",
+      "Blanca Lopez",
+      "Fernando Dominguez",
+      "Heidi Jacquez",
+      "Liliana Castillo",
+      "Martin Cabrera",
+      "Sergio Lopez",
+      "Xareni Espindola Perez",
+      "Yanet Matas Manzano",
+      "Yazmin Corral"
+    ];
+
+    // ------------------------- VARIABLES GLOBALES -------------------------
+    let workbook;             // Objeto XLSX (libro Excel)
+    let selectedFileName;     // Nombre del archivo seleccionado (en uploads)
+    let invDataArr = [];      // Datos de la hoja "Inventarios"
+    let currentMarbete = "";  // Marbete asignado
+
+    // ------------------------- ADMIN Y FILTROS -------------------------
+    function populateBossDropdowns() {
+      const bossUploadSelect = document.getElementById("bossUploadSelect");
+      const bossFilterSelect = document.getElementById("bossFilterSelect");
+      bossUploadSelect.innerHTML = '<option value="">Seleccione un jefe</option>';
+      bossFilterSelect.innerHTML = '<option value="Todos">Todos</option>';
+      bosses.forEach(boss => {
+        const option1 = document.createElement("option");
+        option1.value = boss;
+        option1.textContent = boss;
+        bossUploadSelect.appendChild(option1);
+        const option2 = document.createElement("option");
+        option2.value = boss;
+        option2.textContent = boss;
+        bossFilterSelect.appendChild(option2);
+      });
     }
-    async function handleFileDrop(e) {
+
+    // ------------------------- FUNCIONES DE SUBIDA Y LISTADO -------------------------
+    function handleFileDrop(e) {
       e.preventDefault();
-      e.currentTarget.classList.remove("dragover");
+      dropzone.classList.remove("dragover");
       if (!e.dataTransfer.files.length) return;
       const file = e.dataTransfer.files[0];
       if (!file) return;
-
-      if (!file.name.includes("Inventario_")) {
-        Swal.fire({
+      // Se permiten archivos cuyo nombre contenga "Inventario"
+      if (!file.name.includes("Inventario")) {
+        return Swal.fire({
           icon: "warning",
           title: "Archivo Inválido",
-          text: "El archivo debe contener 'Inventario_' en su nombre.",
-        });
-        return;
-      }
-
-      try {
-        const fileRef = storage.ref(`uploads/${file.name}`);
-        await fileRef.put(file);
-        Swal.fire({
-          icon: "success",
-          title: "¡Subido!",
-          text: `El archivo '${file.name}' se subió correctamente.`,
-        });
-        loadFileList();
-      } catch (error) {
-        console.error("Error al subir archivo:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "No se pudo subir el archivo.",
+          text: "El archivo debe contener 'Inventario' en su nombre.",
+          timer: 10000,
+          timerProgressBar: true
         });
       }
+      const selectedBoss = document.getElementById("bossUploadSelect").value;
+      if (!selectedBoss) {
+        return Swal.fire({
+          icon: "warning",
+          title: "Falta Jefe",
+          text: "Por favor, selecciona el jefe al que pertenece el archivo.",
+          timer: 10000,
+          timerProgressBar: true
+        });
+      }
+      (async () => {
+        try {
+          const fileRef = storage.ref(`uploads/${file.name}`);
+          await fileRef.put(file, { customMetadata: { jefe: selectedBoss } });
+          Swal.fire({
+            icon: "success",
+            title: "¡Subido!",
+            text: `El archivo '${file.name}' se subió correctamente.`,
+            timer: 10000,
+            timerProgressBar: true
+          });
+          loadFileList();
+        } catch (error) {
+          console.error("Error al subir archivo:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo subir el archivo.",
+            timer: 10000,
+            timerProgressBar: true
+          });
+        }
+      })();
     }
 
-    // ========== LISTAR ARCHIVOS Inventario_* ==========
     async function loadFileList() {
       const fileListElem = document.getElementById("fileList");
       fileListElem.innerHTML = '<option value="">Seleccione un archivo</option>';
       try {
         const listResult = await storage.ref("uploads").listAll();
-        listResult.items.forEach((fileRef) => {
-          if (fileRef.name.includes("Inventario_")) {
-            const option = document.createElement("option");
-            option.value = fileRef.name;
-            option.textContent = fileRef.name;
-            fileListElem.appendChild(option);
+        const bossFilter = document.getElementById("bossFilterSelect").value;
+        // Mostrar todos los archivos cuyo nombre contenga "Inventario"
+        const files = await Promise.all(listResult.items.map(async (fileRef) => {
+          const meta = await fileRef.getMetadata().catch(e => null);
+          return { fileRef, meta };
+        }));
+        files.forEach(item => {
+          if (item.meta) {
+            if (!item.fileRef.name.includes("Inventario")) return;
+            const jefe = (item.meta.customMetadata && item.meta.customMetadata.jefe) || "SinJefe";
+            if (bossFilter === "Todos" || bossFilter === jefe) {
+              const option = document.createElement("option");
+              option.value = item.fileRef.name;
+              option.textContent = `${item.fileRef.name} [${jefe}]`;
+              fileListElem.appendChild(option);
+            }
           }
         });
       } catch (error) {
@@ -374,31 +498,70 @@ const auth = firebase.auth();
           icon: "error",
           title: "Error",
           text: "No se pudo listar los archivos de inventario.",
+          timer: 10000,
+          timerProgressBar: true
         });
       }
     }
 
-    // ========== CARGAR ARCHIVO SELECCIONADO ==========
+    // Función para eliminar el archivo seleccionado (solo admin)
+    async function deleteFile() {
+      if (!selectedFileName) {
+        return Swal.fire({
+          icon: "info",
+          title: "Sin Archivo",
+          text: "Selecciona un archivo primero.",
+          timer: 10000,
+          timerProgressBar: true
+        });
+      }
+      const confirmResult = await Swal.fire({
+        icon: "warning",
+        title: "Confirmar Eliminación",
+        text: `¿Estás seguro de eliminar el archivo '${selectedFileName}'? Esta acción no se puede deshacer.`,
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        timer: 10000,
+        timerProgressBar: true
+      });
+      if (confirmResult.isConfirmed) {
+        try {
+          await storage.ref(`uploads/${selectedFileName}`).delete();
+          await db.collection('inventarios').doc(selectedFileName).delete();
+          Swal.fire({
+            icon: "success",
+            title: "Eliminado",
+            text: "El archivo se ha eliminado correctamente.",
+            timer: 10000,
+            timerProgressBar: true
+          });
+          loadFileList();
+        } catch (error) {
+          console.error("Error al eliminar archivo:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo eliminar el archivo.",
+            timer: 10000,
+            timerProgressBar: true
+          });
+        }
+      }
+    }
+
+    // ------------------------- FUNCIONES DE INVENTARIO -------------------------
     async function loadSelectedFile() {
       selectedFileName = document.getElementById("fileList").value;
       if (!selectedFileName) return;
-
       try {
         const fileRef = storage.ref(`uploads/${selectedFileName}`);
         const fileUrl = await fileRef.getDownloadURL();
         console.log("Descargando URL:", fileUrl);
-
         const response = await fetch(fileUrl);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const arrayBuffer = await response.arrayBuffer();
         workbook = XLSX.read(arrayBuffer, { type: "array" });
-
-        // HOJA "Inventarios" => con las columnas:
-        // SKU, EUROPEO, DESCRIPCION, CANTIDAD_INVENTARIO
-        // + (PISO, BODEGA, AJUSTE) si ya las agregamos antes
         let invSheet = workbook.Sheets["Inventarios"];
         if (!invSheet) {
           invSheet = XLSX.utils.json_to_sheet([]);
@@ -406,19 +569,28 @@ const auth = firebase.auth();
           workbook.Sheets["Inventarios"] = invSheet;
         }
         invDataArr = XLSX.utils.sheet_to_json(invSheet);
-        console.log("Datos crudos de la hoja Inventarios:", invDataArr);
-
-        // Asegurarnos de inicializar PISO, BODEGA, AJUSTE a 0 si no existen
-        invDataArr.forEach((row) => {
+        console.log("Datos de Inventarios:", invDataArr);
+        invDataArr.forEach(row => {
           if (typeof row.PISO === "undefined") row.PISO = 0;
           if (typeof row.BODEGA === "undefined") row.BODEGA = 0;
           if (typeof row.AJUSTE === "undefined") row.AJUSTE = 0;
+          if (typeof row.MARBETE === "undefined") row.MARBETE = "";
         });
-
         Swal.fire({
           icon: "success",
           title: "Archivo Cargado",
           text: `Se cargó '${selectedFileName}' exitosamente.`,
+          timer: 10000,
+          timerProgressBar: true
+        });
+        // Sincronizar en Firestore para edición colaborativa
+        const docRef = db.collection('inventarios').doc(selectedFileName);
+        await docRef.set({ data: invDataArr }, { merge: true });
+        docRef.onSnapshot(snapshot => {
+          if (snapshot.exists) {
+            invDataArr = snapshot.data().data;
+            console.log("Datos actualizados desde Firestore:", invDataArr);
+          }
         });
       } catch (error) {
         console.error("Error al cargar archivo:", error);
@@ -426,106 +598,335 @@ const auth = firebase.auth();
           icon: "error",
           title: "Error al Cargar",
           text: error.message,
+          timer: 10000,
+          timerProgressBar: true
         });
       }
     }
 
-    // ========== ESCANEAR SKU ==========
-    async function handleScan(input) {
-      const code = input.value.trim();
-      if (!code || code.length < 5 || !workbook || !invDataArr.length) return;
-
-      // Buscar en invDataArr el SKU
-      // Cada row => { SKU, EUROPEO, DESCRIPCION, CANTIDAD_INVENTARIO, PISO, BODEGA, AJUSTE }
-      const rowIndex = invDataArr.findIndex(
-        (r) => r.SKU?.toString().trim() === code
-      );
-      if (rowIndex === -1) {
-        // No existe => no se puede sumar
+    // Función para notificar diferencias (toast 10s)
+    function notifyRemaining(code, row) {
+      if (!row.CANTIDAD_INVENTARIO) return;
+      const expected = row.CANTIDAD_INVENTARIO;
+      const current = row.AJUSTE;
+      const diff = current - expected;
+      if (diff < 0) {
         Swal.fire({
-          icon: "warning",
-          title: "SKU no encontrado",
-          text: `El SKU ${code} no está en la hoja Inventarios.`,
+          toast: true,
+          position: 'top-end',
+          icon: 'info',
+          title: `El SKU ${code} requiere ${expected} unidades, faltan ${-diff} piezas.`,
+          showConfirmButton: false,
+          timer: 10000,
+          timerProgressBar: true,
         });
-        input.value = "";
-        return;
-      }
-
-      const row = invDataArr[rowIndex];
-      // Sumar al PISO o BODEGA
-      const isPiso = document.getElementById("locationCheckbox").checked;
-      if (isPiso) {
-        row.PISO = (row.PISO || 0) + 1;
+      } else if (diff === 0) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `El SKU ${code} tiene las ${expected} unidades requeridas.`,
+          showConfirmButton: false,
+          timer: 10000,
+          timerProgressBar: true,
+        });
       } else {
-        row.BODEGA = (row.BODEGA || 0) + 1;
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'warning',
+          title: `El SKU ${code} excede la cantidad requerida en ${diff} unidades.`,
+          showConfirmButton: false,
+          timer: 10000,
+          timerProgressBar: true,
+        });
       }
-      // Recalcular
-      row.AJUSTE = (row.PISO || 0) + (row.BODEGA || 0);
-
-      // Volver a subir el Excel
-      await updateInventariosSheet();
-      Swal.fire({
-        icon: "success",
-        title: "Escaneo Registrado",
-        text: `SKU ${code} sumado correctamente.`,
-      });
-      input.value = "";
     }
 
-    // ========== ACTUALIZAR HOJA "Inventarios" ==========
+    // Función para actualizar el archivo en Storage y Firestore
     async function updateInventariosSheet() {
       if (!workbook || !selectedFileName) return;
-
       try {
-        // Convertir invDataArr a hoja
         const newSheet = XLSX.utils.json_to_sheet(invDataArr);
         workbook.Sheets["Inventarios"] = newSheet;
-
+        if (!workbook.Workbook) workbook.Workbook = {};
+        if (!workbook.Workbook.WBProps) workbook.Workbook.WBProps = { date1904: false, codeName: "ThisWorkbook" };
+        if (!workbook.Workbook.Sheets) workbook.Workbook.Sheets = workbook.SheetNames.map((name, i) => ({ name, SheetId: i + 1 }));
         const wbOut = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
         const fileRef = storage.ref(`uploads/${selectedFileName}`);
-        await fileRef.put(new Blob([wbOut], { type: "application/octet-stream" }));
-        console.log("Archivo re-subido en", selectedFileName);
+        const meta = await fileRef.getMetadata().catch(e => ({}));
+        const customMetadata = (meta && meta.customMetadata) ? meta.customMetadata : {};
+        await fileRef.put(new Blob([wbOut], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), { customMetadata });
+        console.log("Archivo actualizado:", selectedFileName);
+        await db.collection('inventarios').doc(selectedFileName).set({ data: invDataArr }, { merge: true });
       } catch (error) {
         console.error("Error al actualizar Excel:", error);
         Swal.fire({
           icon: "error",
           title: "Error",
           text: "No se pudo actualizar la hoja Inventarios.",
+          timer: 10000,
+          timerProgressBar: true
         });
       }
     }
 
-    // ========== GUARDAR CAMBIOS (BOTÓN) ==========
+    // Función para el escaneo de SKU
+    function handleScan() {
+      const scanInput = document.getElementById("scanInput");
+      const code = scanInput.value.trim();
+      if (!code || code.length < 5) return;
+      if (!workbook || !invDataArr.length) {
+        Swal.fire({
+          icon: "warning",
+          title: "Archivo no cargado",
+          text: "Selecciona y carga un archivo primero.",
+          timer: 10000,
+          timerProgressBar: true
+        });
+        scanInput.value = "";
+        return;
+      }
+      if (!currentMarbete) {
+        Swal.fire({
+          icon: "warning",
+          title: "Sin Marbete",
+          text: "Primero asigna un marbete antes de escanear.",
+          timer: 10000,
+          timerProgressBar: true
+        });
+        scanInput.value = "";
+        return;
+      }
+      
+      let currentRow = invDataArr.find(r => r.SKU?.toString().trim() === code && r.MARBETE === currentMarbete);
+      if (currentRow) {
+        const isPiso = document.getElementById("locationCheckbox").checked;
+        if (isPiso) {
+          currentRow.PISO = (currentRow.PISO || 0) + 1;
+        } else {
+          currentRow.BODEGA = (currentRow.BODEGA || 0) + 1;
+        }
+        currentRow.AJUSTE = (currentRow.PISO || 0) + (currentRow.BODEGA || 0);
+        notifyRemaining(code, currentRow);
+        updateInventariosSheet().then(() => {
+          Swal.fire({
+            icon: "success",
+            title: "Escaneo Registrado",
+            text: `SKU ${code} actualizado en marbete '${currentMarbete}'.`,
+            timer: 10000,
+            timerProgressBar: true
+          });
+          scanInput.value = "";
+        });
+        return;
+      }
+      
+      let otherRow = invDataArr.find(r => r.SKU?.toString().trim() === code);
+      if (otherRow) {
+        if (!otherRow.MARBETE) {
+          otherRow.MARBETE = currentMarbete;
+          const isPiso = document.getElementById("locationCheckbox").checked;
+          if (isPiso) {
+            otherRow.PISO = (otherRow.PISO || 0) + 1;
+          } else {
+            otherRow.BODEGA = (otherRow.BODEGA || 0) + 1;
+          }
+          otherRow.AJUSTE = (otherRow.PISO || 0) + (otherRow.BODEGA || 0);
+          notifyRemaining(code, otherRow);
+          updateInventariosSheet().then(() => {
+            Swal.fire({
+              icon: "success",
+              title: "Escaneo Registrado",
+              text: `SKU ${code} asignado al marbete '${currentMarbete}'.`,
+              timer: 10000,
+              timerProgressBar: true
+            });
+            scanInput.value = "";
+          });
+          return;
+        } else {
+          Swal.fire({
+            icon: "question",
+            title: "SKU ya asignado",
+            text: `El SKU ${code} ya está asignado al marbete '${otherRow.MARBETE}'. ¿Desea sumar o crear una nueva entrada?`,
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Sumar",
+            denyButtonText: "Nueva entrada",
+            cancelButtonText: "Cancelar",
+            timer: 10000,
+            timerProgressBar: true
+          }).then((result) => {
+            if (result.isConfirmed) {
+              const isPiso = document.getElementById("locationCheckbox").checked;
+              if (isPiso) {
+                otherRow.PISO = (otherRow.PISO || 0) + 1;
+              } else {
+                otherRow.BODEGA = (otherRow.BODEGA || 0) + 1;
+              }
+              otherRow.AJUSTE = (otherRow.PISO || 0) + (otherRow.BODEGA || 0);
+              notifyRemaining(code, otherRow);
+              updateInventariosSheet().then(() => {
+                Swal.fire({
+                  icon: "success",
+                  title: "Escaneo Registrado",
+                  text: `SKU ${code} actualizado en marbete '${otherRow.MARBETE}'.`,
+                  timer: 10000,
+                  timerProgressBar: true
+                });
+                scanInput.value = "";
+              });
+            } else if (result.isDenied) {
+              let newRow = Object.assign({}, otherRow);
+              newRow.MARBETE = currentMarbete;
+              newRow.PISO = 0;
+              newRow.BODEGA = 0;
+              const isPiso = document.getElementById("locationCheckbox").checked;
+              if (isPiso) {
+                newRow.PISO = 1;
+              } else {
+                newRow.BODEGA = 1;
+              }
+              newRow.AJUSTE = newRow.PISO + newRow.BODEGA;
+              notifyRemaining(code, newRow);
+              invDataArr.push(newRow);
+              updateInventariosSheet().then(() => {
+                Swal.fire({
+                  icon: "success",
+                  title: "Nueva Entrada Creada",
+                  text: `SKU ${code} registrado en marbete '${currentMarbete}'.`,
+                  timer: 10000,
+                  timerProgressBar: true
+                });
+                scanInput.value = "";
+              });
+            } else {
+              scanInput.value = "";
+            }
+          });
+          return;
+        }
+      }
+      
+      Swal.fire({
+        icon: "warning",
+        title: "SKU no encontrado",
+        text: `El SKU ${code} no está en la hoja Inventarios.`,
+        timer: 10000,
+        timerProgressBar: true
+      });
+      scanInput.value = "";
+    }
+
+    // ------------------------- EDICIÓN MANUAL DE REGISTROS -------------------------
+    function searchMarbete() {
+      const searchValue = document.getElementById("manualMarbeteSearch").value.trim();
+      if (!searchValue) {
+        return Swal.fire({
+          icon: "warning",
+          title: "Campo Vacío",
+          text: "Ingresa un marbete para buscar (ej: 251_01).",
+          timer: 10000,
+          timerProgressBar: true
+        });
+      }
+      const filtered = invDataArr.map((row, index) => ({ _index: index, ...row }))
+                                  .filter(row => row.MARBETE === searchValue);
+      renderManualEditTable(filtered);
+    }
+
+    function renderManualEditTable(records) {
+      let html = "";
+      if (records.length === 0) {
+        html = "<p>No se encontraron registros para ese marbete.</p>";
+      } else {
+        html += `<table class="table table-bordered table-hover">
+                   <thead>
+                     <tr>
+                       <th>SKU</th>
+                       <th>Descripción</th>
+                       <th>Cant. Inventario</th>
+                       <th>PISO</th>
+                       <th>BODEGA</th>
+                       <th>AJUSTE</th>
+                     </tr>
+                   </thead>
+                   <tbody>`;
+        records.forEach(record => {
+          html += `<tr>
+                     <td data-label="SKU">${record.SKU || ""}</td>
+                     <td data-label="Descripción">${record.DESCRIPCION || ""}</td>
+                     <td data-label="Cant. Inventario">${record.CANTIDAD_INVENTARIO || 0}</td>
+                     <td data-label="PISO"><input type="number" class="form-control manualPiso" data-index="${record._index}" value="${record.PISO || 0}" min="0"></td>
+                     <td data-label="BODEGA"><input type="number" class="form-control manualBodega" data-index="${record._index}" value="${record.BODEGA || 0}" min="0"></td>
+                     <td data-label="AJUSTE">${record.AJUSTE || 0}</td>
+                   </tr>`;
+        });
+        html += `   </tbody>
+                 </table>`;
+      }
+      document.getElementById("manualEditResults").innerHTML = html;
+    }
+
+    function saveManualEdits() {
+      const pisoInputs = document.querySelectorAll(".manualPiso");
+      const bodegaInputs = document.querySelectorAll(".manualBodega");
+      pisoInputs.forEach(input => {
+        const idx = input.getAttribute("data-index");
+        invDataArr[idx].PISO = parseInt(input.value, 10) || 0;
+      });
+      bodegaInputs.forEach(input => {
+        const idx = input.getAttribute("data-index");
+        invDataArr[idx].BODEGA = parseInt(input.value, 10) || 0;
+      });
+      invDataArr.forEach(row => {
+        row.AJUSTE = (row.PISO || 0) + (row.BODEGA || 0);
+      });
+      updateInventariosSheet().then(() => {
+        Swal.fire({
+          icon: "success",
+          title: "Cambios Guardados",
+          text: "Los cambios manuales se han guardado correctamente.",
+          timer: 10000,
+          timerProgressBar: true
+        });
+      });
+    }
+
+    // ------------------------- BOTONES DE ACCIÓN -------------------------
     async function saveData() {
       if (!workbook || !selectedFileName) {
-        Swal.fire({
+        return Swal.fire({
           icon: "info",
           title: "Sin Archivo",
           text: "Selecciona y carga un archivo primero.",
+          timer: 10000,
+          timerProgressBar: true
         });
-        return;
       }
       await updateInventariosSheet();
       Swal.fire({
         icon: "success",
         title: "Cambios Guardados",
         text: `Se han guardado los datos en '${selectedFileName}'.`,
+        timer: 10000,
+        timerProgressBar: true
       });
     }
 
-    // ========== DESCARGAR ARCHIVO ==========
     function downloadInventario() {
       if (!selectedFileName) {
-        Swal.fire({
+        return Swal.fire({
           icon: "info",
           title: "Sin Archivo",
           text: "Selecciona un archivo antes de descargar.",
+          timer: 10000,
+          timerProgressBar: true
         });
-        return;
       }
       const fileRef = storage.ref(`uploads/${selectedFileName}`);
-      fileRef
-        .getDownloadURL()
+      fileRef.getDownloadURL()
         .then((url) => {
           const a = document.createElement("a");
           a.href = url;
@@ -540,42 +941,46 @@ const auth = firebase.auth();
             icon: "error",
             title: "Error",
             text: "No se pudo descargar el archivo.",
+            timer: 10000,
+            timerProgressBar: true
           });
         });
     }
 
-    // ========== VER HOJA "Inventarios" ========== 
+    // ------------------------- VENTANA DE INVENTARIO -------------------------
     function viewSheet() {
       if (!invDataArr.length) {
-        Swal.fire({
+        return Swal.fire({
           icon: "info",
           title: "Sin Datos",
           text: "No se ha cargado la hoja Inventarios.",
+          timer: 10000,
+          timerProgressBar: true
         });
-        return;
       }
       const newWin = window.open("", "_blank");
       if (!newWin) {
-        Swal.fire({
+        return Swal.fire({
           icon: "warning",
           title: "Ventana Bloqueada",
           text: "El navegador bloqueó la ventana emergente.",
+          timer: 10000,
+          timerProgressBar: true
         });
-        return;
       }
-
+      
       let htmlRows = "";
       invDataArr.forEach((row) => {
-        // row => SKU, EUROPEO, DESCRIPCION, CANTIDAD_INVENTARIO, PISO, BODEGA, AJUSTE
         htmlRows += `
           <tr>
-            <td>${row.SKU || ""}</td>
-            <td>${row.EUROPEO || ""}</td>
-            <td>${row.DESCRIPCION || ""}</td>
-            <td>${row.CANTIDAD_INVENTARIO || 0}</td>
-            <td>${row.PISO || 0}</td>
-            <td>${row.BODEGA || 0}</td>
-            <td>${row.AJUSTE || 0}</td>
+            <td data-label="SKU">${row.SKU || ""}</td>
+            <td data-label="EUROPEO">${row.EUROPEO || ""}</td>
+            <td data-label="DESCRIPCION">${row.DESCRIPCION || ""}</td>
+            <td data-label="CANTIDAD INVENTARIO">${row.CANTIDAD_INVENTARIO || 0}</td>
+            <td data-label="PISO">${row.PISO || 0}</td>
+            <td data-label="BODEGA">${row.BODEGA || 0}</td>
+            <td data-label="AJUSTE">${row.AJUSTE || 0}</td>
+            <td data-label="MARBETE">${row.MARBETE || ""}</td>
           </tr>
         `;
       });
@@ -584,29 +989,74 @@ const auth = firebase.auth();
         <!DOCTYPE html>
         <html lang="es">
         <head>
-          <meta charset="UTF-8"/>
-          <title>Hoja Inventarios - ${selectedFileName}</title>
+          <meta charset="UTF-8" />
+          <title>Inventario - ${selectedFileName}</title>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+          <style>
+            body {
+              font-family: 'Poppins', sans-serif;
+              background: linear-gradient(to right, #E6007E, #000);
+              color: #333;
+              padding: 20px;
+            }
+            h2 {
+              color: #fff;
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .card {
+              border: none;
+              border-radius: 15px;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+              background-color: #fff;
+            }
+            .card-header {
+              background-color: #E6007E;
+              color: #fff;
+              border-top-left-radius: 15px;
+              border-top-right-radius: 15px;
+              font-size: 1.25rem;
+              text-align: center;
+            }
+            .table thead th {
+              background-color: #F8BBD0;
+              color: #333;
+            }
+            .table tbody tr:nth-child(even) {
+              background-color: #f8f9fa;
+            }
+            .table tbody tr:hover {
+              background-color: #ddd;
+            }
+          </style>
         </head>
-        <body class="p-3">
-          <h2>Hoja "Inventarios" en '${selectedFileName}'</h2>
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered table-hover">
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>EUROPEO</th>
-                  <th>DESCRIPCION</th>
-                  <th>CANTIDAD_INVENTARIO</th>
-                  <th>PISO</th>
-                  <th>BODEGA</th>
-                  <th>AJUSTE</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${htmlRows}
-              </tbody>
-            </table>
+        <body>
+          <div class="container">
+            <h2>Inventario - ${selectedFileName}</h2>
+            <div class="card">
+              <div class="card-header">Hoja Inventarios</div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover table-bordered">
+                    <thead>
+                      <tr>
+                        <th>SKU</th>
+                        <th>EUROPEO</th>
+                        <th>DESCRIPCION</th>
+                        <th>CANTIDAD INVENTARIO</th>
+                        <th>PISO</th>
+                        <th>BODEGA</th>
+                        <th>AJUSTE</th>
+                        <th>MARBETE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${htmlRows}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         </body>
         </html>
@@ -614,12 +1064,7 @@ const auth = firebase.auth();
       newWin.document.close();
     }
 
-    // ========== onLoad ==========
-    window.onload = () => {
-      loadFileList();
-    };
-
-    // ========== CERRAR SESIÓN ==========
+    // ------------------------- CERRAR SESIÓN -------------------------
     function logout() {
       auth.signOut()
         .then(() => {
@@ -627,6 +1072,9 @@ const auth = firebase.auth();
             icon: "success",
             title: "Sesión Cerrada",
             text: "Has cerrado sesión correctamente.",
+            confirmButtonText: "Aceptar",
+            timer: 10000,
+            timerProgressBar: true
           }).then(() => {
             window.location.href = "login.html";
           });
@@ -637,15 +1085,67 @@ const auth = firebase.auth();
             icon: "error",
             title: "Error",
             text: "No se pudo cerrar sesión.",
+            timer: 10000,
+            timerProgressBar: true
           });
         });
+    }
+
+    // ------------------------- ASIGNACIÓN DE EVENT LISTENERS -------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+      populateBossDropdowns();
+      document.getElementById("setMarbeteBtn").addEventListener("click", setMarbete);
+      const dropzone = document.getElementById("dropzone");
+      if (dropzone) {
+        dropzone.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropzone.classList.add("dragover");
+        });
+        dropzone.addEventListener("dragleave", (e) => {
+          e.preventDefault();
+          dropzone.classList.remove("dragover");
+        });
+        dropzone.addEventListener("drop", handleFileDrop);
+      }
+      document.getElementById("fileList").addEventListener("change", loadSelectedFile);
+      document.getElementById("scanInput").addEventListener("change", handleScan);
+      document.getElementById("saveDataBtn").addEventListener("click", saveData);
+      document.getElementById("downloadBtn").addEventListener("click", downloadInventario);
+      document.getElementById("viewSheetBtn").addEventListener("click", viewSheet);
+      document.getElementById("logout-btn").addEventListener("click", logout);
+      document.getElementById("bossFilterSelect").addEventListener("change", loadFileList);
+      document.getElementById("searchMarbeteBtn").addEventListener("click", searchMarbete);
+      document.getElementById("saveManualBtn").addEventListener("click", saveManualEdits);
+      document.getElementById("deleteFileBtn").addEventListener("click", deleteFile);
+      loadFileList();
+    });
+
+    // ------------------------- FUNCIÓN PARA ASIGNAR MARBETE -------------------------
+    function setMarbete() {
+      const marbeteInput = document.getElementById("marbeteInput");
+      const val = marbeteInput.value.trim();
+      const regex = /^\d{3}_(0[1-9]|[1-9]\d|100)$/;
+      if (!regex.test(val)) {
+        return Swal.fire({
+          icon: "warning",
+          title: "Formato de Marbete Incorrecto",
+          text: "Ingresa el marbete en el formato SECCION_NUMERO, por ejemplo: 251_01 (la sección son 3 dígitos y el número entre 01 y 100).",
+          timer: 10000,
+          timerProgressBar: true
+        });
+      }
+      currentMarbete = val;
+      Swal.fire({
+        icon: "success",
+        title: "Marbete Asignado",
+        text: `Ahora estás escaneando con el marbete: ${currentMarbete}.`,
+        timer: 10000,
+        timerProgressBar: true
+      });
     }
   </script>
 
   <!-- Bootstrap JS -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    defer
-  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
 </body>
 </html>

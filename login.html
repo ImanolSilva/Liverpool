@@ -1,98 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Autenticación - Mi Aplicación</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autenticación con Google - Mi Aplicación</title>
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome para Íconos -->
+  <!-- Font Awesome para íconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Animate.css para Animaciones -->
+  <!-- Animate.css para animaciones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   
-  <!-- Custom Styles (MISMO DISEÑO, SIN CAMBIOS) -->
+  <!-- Custom Styles -->
   <style>
     body {
-      background: linear-gradient(to right, #E6007E, #000000); /* Rosa degradado */
+      background: linear-gradient(to right, #E6007E, #000);
       font-family: 'Poppins', Arial, sans-serif;
     }
     .auth-container {
       max-width: 400px;
-      width: 100%;
       margin: 0 auto;
+      padding-top: 8%;
     }
     .card {
       border: none;
       border-radius: 1rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      background-color: #ffffff;
-    }
-    .nav-tabs .nav-link {
-      border: none;
-      color: #6c757d;
-      font-weight: bold;
-      transition: color 0.3s ease, background-color 0.3s ease;
-    }
-    .nav-tabs .nav-link.active {
-      color: #e83e8c;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       background-color: #fff;
-      border-bottom: 2px solid #e83e8c;
     }
-    .form-label {
-      font-size: 0.9rem;
-      color: #495057;
+    .card-body {
+      padding: 2rem;
+    }
+    .typewriter {
+      overflow: hidden;
+      border-right: .15em solid #E6007E;
+      white-space: nowrap;
+      margin: 0 auto 1.5rem;
+      letter-spacing: .15em;
+      animation: typing 3s steps(20, end) 0.5s forwards, blink-caret 0.75s step-end infinite;
+      font-size: 2rem;
       font-weight: bold;
+      text-align: center;
     }
-    .input-group-text {
-      background-color: #f8f9fa;
-      border: 1px solid #dee2e6;
-      color: #6c757d;
-      border-radius: 0.375rem 0 0 0.375rem;
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
     }
-    .form-control {
-      border: 1px solid #dee2e6;
-      border-radius: 0.375rem;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-    .form-control:focus {
-      border-color: #e83e8c;
-      box-shadow: 0 0 6px rgba(232, 62, 140, 0.2);
+    @keyframes blink-caret {
+      50% { border-color: transparent; }
     }
     .btn-custom {
-      background-color: #e83e8c;
-      color: white;
+      background-color: #E6007E;
+      color: #fff;
+      border: none;
       border-radius: 0.375rem;
       padding: 0.75rem;
       font-weight: bold;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+      margin-top: 1rem;
     }
     .btn-custom:hover {
       transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(232, 62, 140, 0.3);
+      box-shadow: 0 6px 12px rgba(230,0,126,0.3);
     }
-    .loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #e83e8c;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: auto;
+    .forgot-link {
+      color: #E6007E;
+      font-weight: bold;
+      text-decoration: none;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .forgot-link:hover {
+      text-decoration: underline;
     }
-
     /* Modal de carga */
     .modal-loading {
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: rgba(0, 0, 0, 0.6);
+      background-color: rgba(0,0,0,0.6);
       position: fixed;
       top: 0;
       left: 0;
@@ -100,82 +87,57 @@
       height: 100%;
       z-index: 1050;
     }
-    .modal-loading .spinner {
+    .modal-loading .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #E6007E;
+      border-radius: 50%;
       width: 3rem;
       height: 3rem;
-      border: 4px solid rgba(255, 255, 255, 0.2);
-      border-top-color: #e83e8c;
-      border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-
-    /* Alertas Personalizadas */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Alertas personalizadas */
     .custom-alert {
       position: fixed;
       bottom: 1rem;
       right: 1rem;
       z-index: 1050;
-      background-color: #e83e8c;
-      color: white;
+      background-color: #E6007E;
+      color: #fff;
       border-radius: 8px;
       padding: 1rem 1.5rem;
       font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       animation: fadeInUp 0.5s ease;
     }
-    .custom-alert i {
-      margin-right: 0.5rem;
-    }
     @keyframes fadeInUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
-
-    /* Efecto Typewriter */
-    .typewriter-text {
-      color: #E6007E;
-      font-weight: bold;
-      font-size: 1.5rem;
-      display: inline-block;
-      white-space: nowrap;
-      overflow: hidden;
-      border-right: 2px solid #E6007E; /* Simulando cursor de máquina de escribir */
-      width: 0;
-      animation: typing 3s steps(30) 1s forwards, blink 0.75s step-end infinite;
-    }
-
-    @keyframes typing {
-      from {
-        width: 0;
+    /* Adaptación para móviles */
+    @media (max-width: 576px) {
+      .auth-container {
+        padding-top: 15%;
       }
-      to {
-        width: 100%;
+      .typewriter {
+        font-size: 1.5rem;
       }
-    }
-
-    @keyframes blink {
-      50% {
-        border-color: transparent;
+      .btn-custom {
+        padding: 0.75rem;
+        font-size: 0.9rem;
       }
     }
   </style>
 
-  <!-- Firebase App (Debe ser primero) -->
+  <!-- Firebase (compat) y Auth (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <!-- Firebase Auth -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <!-- Inicialización de Firebase -->
   <script>
-    // ========== CONFIGURACIÓN DE FIREBASE ==========
+    // CONFIGURACIÓN DE FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyA_4H46I7TCVLnFjet8fQPZ006latm-mRE",
       authDomain: "loginliverpool.firebaseapp.com",
@@ -183,126 +145,49 @@
       storageBucket: "loginliverpool.appspot.com",
       messagingSenderId: "704223815941",
       appId: "1:704223815941:web:c871525230fb61caf96f6c",
-      measurementId: "G-QFEPQ4TSPY",
+      measurementId: "G-QFEPQ4TSPY"
     };
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-
-    // IMPORTANTE: Forzar el idioma español en los correos
+    // Forzar idioma español
     auth.languageCode = "es";
   </script>
 </head>
 <body>
-  <div class="container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="auth-container animate__animated animate__fadeIn">
+  <div class="container d-flex align-items-center min-vh-100">
+    <div class="auth-container">
       <div class="card">
-        <div class="card-body p-4">
-          <!-- Título con efecto typewriter -->
-          <h1 class="text-center mb-4">
-            <span class="typewriter-text">Bienvenido Sistema Liverpool</span>
-          </h1>
-
-          <!-- Nav Tabs -->
-          <ul class="nav nav-tabs justify-content-center mb-4" id="authTab" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active tab-button" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">
-                <i class="fas fa-sign-in-alt me-2"></i> Iniciar Sesión
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link tab-button" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">
-                <i class="fas fa-user-plus me-2"></i> Registrarse
-              </button>
-            </li>
-          </ul>
-
-          <!-- Tab Panes -->
-          <div class="tab-content" id="authTabContent">
-            <!-- Login Tab -->
-            <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
-              <form id="loginForm">
-                <div class="mb-3">
-                  <label for="loginEmail" class="form-label">Correo Electrónico</label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                    <input type="email" class="form-control" id="loginEmail" placeholder="Ingresa tu correo" required>
-                  </div>
-                </div>
-                <div class="mb-4">
-                  <label for="loginPassword" class="form-label">Contraseña</label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                    <input type="password" class="form-control" id="loginPassword" placeholder="Ingresa tu contraseña" required>
-                  </div>
-                </div>
-
-                <!-- NUEVO Enlace para "Olvidé mi contraseña" -->
-                <p class="text-end mb-3">
-                  <a href="#" id="forgotPasswordLink" style="color: #e83e8c; font-weight: bold; text-decoration: none;">
-                    ¿Olvidaste tu contraseña?
-                  </a>
-                </p>
-
-                <button type="submit" class="btn btn-primary w-100 btn-custom">
-                  <i class="fas fa-sign-in-alt me-2"></i> Entrar
-                </button>
-              </form>
-            </div>
-
-            <!-- Register Tab -->
-            <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
-              <form id="registerForm">
-                <div class="mb-3">
-                  <label for="registerEmail" class="form-label">Correo Electrónico</label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                    <input type="email" class="form-control" id="registerEmail" placeholder="Ingresa tu correo" required>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="registerPassword" class="form-label">Contraseña</label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                    <input type="password" class="form-control" id="registerPassword" placeholder="Ingresa tu contraseña" required>
-                  </div>
-                </div>
-                <div class="mb-4">
-                  <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirma tu contraseña" required>
-                  </div>
-                </div>
-                <button type="submit" class="btn btn-secondary w-100 btn-custom">
-                  <i class="fas fa-user-plus me-2"></i> Registrarse
-                </button>
-              </form>
-            </div>
-          </div>
+        <div class="card-body">
+          <!-- Encabezado con efecto typewriter -->
+          <div class="typewriter">Iniciar Sesión</div>
+          <!-- Botón para iniciar sesión con Google -->
+          <button id="googleSignInBtn" class="btn btn-custom">
+            <i class="fab fa-google me-2"></i> Iniciar sesión con Google
+          </button>
+          <!-- Enlace para restablecer contraseña -->
+          <p class="mt-3">
+            <a href="#" id="forgotPasswordLink" class="forgot-link">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal de "Olvidaste tu Contraseña" con ajustes de diseño -->
+  <!-- Modal para restablecer contraseña -->
   <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content" style="border-radius: 1rem;">
-        
-        <!-- Cabecera con icono y color sutil -->
-        <div class="modal-header" style="border-bottom: none; background-color: #f8f9fa;">
+        <div class="modal-header" style="background-color: #f8f9fa; border-bottom: none;">
           <h5 class="modal-title" id="forgotPasswordModalLabel">
-            <i class="fa fa-unlock-alt me-2" style="color: #e83e8c;"></i> 
-            Restablecer Contraseña
+            <i class="fas fa-unlock-alt me-2" style="color: #E6007E;"></i> Restablecer Contraseña
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
-
-        <!-- Cuerpo con leve fondo gris -->
         <div class="modal-body" style="background-color: #fdfdfd;">
           <p class="mb-3" style="font-size: 0.95rem;">
-            Por favor, ingresa tu correo. Te enviaremos un enlace para restablecer tu contraseña.
+            Ingresa tu correo para recibir un enlace de restablecimiento.
           </p>
           <div class="mb-3">
             <label for="forgotEmail" class="form-label fw-bold">Correo Electrónico</label>
@@ -312,38 +197,19 @@
             </div>
           </div>
         </div>
-
-        <!-- Footer con botones del mismo tamaño -->
-        <div class="modal-footer" style="border-top: none;">
-          <div class="d-flex w-100 justify-content-between">
-            <button
-              type="button"
-              class="btn btn-secondary flex-fill me-2"
-              data-bs-dismiss="modal"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn btn-custom flex-fill"
-              id="sendResetEmailBtn"
-            >
-              <i class="fas fa-paper-plane me-2"></i> Enviar Correo
-            </button>
-          </div>
+        <div class="modal-footer" style="background-color: #fdfdfd; border-top: none;">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-custom" id="sendResetEmailBtn">
+            <i class="fas fa-paper-plane me-2"></i> Enviar Correo
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS (Debe estar al final del body) -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Font Awesome JS (Opcional) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-
-  <!-- login.js (script de inicio de sesión y restablecer contraseña) -->
+  <!-- Script de autenticación -->
   <script src="login.js"></script>
-  <!-- register.js (script de registro) -->
-  <script src="register.js"></script>
 </body>
 </html>

@@ -21,36 +21,78 @@ const auth = firebase.auth();
 const adminUIDs = [
   "OaieQ6cGi7TnW0nbxvlk2oyLaER2",
   "doxhVo1D3aYQqqkqgRgfJ4qcKcU2",
-  // ...
+  // Agrega más UID si es necesario
+];
+
+// ========== LISTA DE JEFES ==========
+const bosses = [
+  "Irene Rojas", 
+  "Adriana Prieto",
+  "Alejandro Morales",
+  "Alfredo Encinas",
+  "Ana Vazquez",
+  "Beatriz Herrera",
+  "Blanca Lopez",
+  "Fernando Dominguez",
+  "Heidi Jacquez",
+  "Liliana Castillo",
+  "Martin Cabrera",
+  "Sergio Lopez",
+  "Xareni Espindola Perez",
+  "Yanet Matas Manzano",
+  "Yazmin Corral"
 ];
 
 // ========== ELEMENTOS DEL DOM ==========
 const logoutButton = document.getElementById("logout-btn");
-const dropzone = document.getElementById('dropzone');
-const fileInput = document.getElementById('fileInput');
-const seccionRegistro = document.getElementById('seccionRegistro');
-const skuInput = document.getElementById('skuInput');
-const skuForm = document.getElementById('skuForm');
-const descargarBtn = document.getElementById('descargarBtn');
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+const seccionRegistro = document.getElementById("seccionRegistro");
+const skuInput = document.getElementById("skuInput");
+const skuForm = document.getElementById("skuForm");
+const descargarBtn = document.getElementById("descargarBtn");
+const userFilePickerSection = document.getElementById("userFilePickerSection");
+const loadFileBtn = document.getElementById("loadFileBtn");
+const selectedFileName = document.getElementById("selectedFileName");
+const borrarBtn = document.getElementById("borrarBtn");
+const confirmFileSelection = document.getElementById("confirmFileSelection");
+// Select para filtrar archivos (por jefe)
+const bossFilterSelect = document.getElementById("bossFilterSelect");
+// Select para asignar jefe al subir archivo (solo Admins)
+const bossUploadSelect = document.getElementById("bossUploadSelect");
 
-const userFilePickerSection = document.getElementById('userFilePickerSection');
-const loadFileBtn = document.getElementById('loadFileBtn');
-const selectedFileName = document.getElementById('selectedFileName');
-const borrarBtn = document.getElementById('borrarBtn');
-const confirmFileSelection = document.getElementById('confirmFileSelection');
+// Variables globales
+let workbook = null; // Objeto XLSX en uso
+let selectedFileIdGlobal = null; // ID del archivo seleccionado en Firestore
+let isAdminGlobal = false; // ¿El usuario es admin?
+let unsubscribePricesChecked = null; // Para la escucha en tiempo real
 
-// Variable global para el workbook en uso
-let workbook = null;
-// ID del archivo seleccionado
-let selectedFileIdGlobal = null;
-// ¿Es admin?
-let isAdminGlobal = false;
+// ========== POPULAR SELECTS DE JEFE ==========
+function populateBossSelects() {
+  if (bossUploadSelect) {
+    bossUploadSelect.innerHTML = '<option value="">Elige un jefe</option>';
+    bosses.forEach(boss => {
+      const option = document.createElement("option");
+      option.value = boss;
+      option.textContent = boss;
+      bossUploadSelect.appendChild(option);
+    });
+  }
+  if (bossFilterSelect) {
+    bossFilterSelect.innerHTML = '<option value="Todos">Todos</option>';
+    bosses.forEach(boss => {
+      const option = document.createElement("option");
+      option.value = boss;
+      option.textContent = boss;
+      bossFilterSelect.appendChild(option);
+    });
+  }
+}
+
+// Llamar a la función al cargar el DOM
+document.addEventListener("DOMContentLoaded", populateBossSelects);
 
 // ========== AUXILIARES ==========
-
-/**
- * Convierte la URL de Storage a ArrayBuffer
- */
 async function base64ToArrayBufferFromURL(url) {
   try {
     const response = await fetch(url);
@@ -75,9 +117,6 @@ function mostrarSeccionesUsuario() {
   if (borrarBtn) borrarBtn.style.display = 'none';
 }
 
-/**
- * Elimina hoja "PRECIOS CHECADOS" si existe en el workbook.
- */
 function eliminarHojaPreciosChecados(wb) {
   if (wb.Sheets['PRECIOS CHECADOS']) {
     delete wb.Sheets['PRECIOS CHECADOS'];
@@ -85,24 +124,14 @@ function eliminarHojaPreciosChecados(wb) {
   wb.SheetNames = wb.SheetNames.filter(name => name !== 'PRECIOS CHECADOS');
 }
 
-/**
- * Reconstruye la hoja PRECIOS CHECADOS a partir de Firestore subcoleccion 'prices_checked'
- */
 async function reconstruirHojaPreciosChecados(fileId, wb) {
-  // 1. Eliminar cualquier rastro de PRECIOS CHECADOS que venga en el Excel
   eliminarHojaPreciosChecados(wb);
-
-  // 2. Consultar la subcolección
   const snapshot = await db.collection('files').doc(fileId).collection('prices_checked').get();
   if (snapshot.empty) {
-    console.log(`No hay SKUs verificados en "prices_checked" para fileId=${fileId}.`);
-    // Si quieres una hoja vacía, la creamos
     wb.Sheets['PRECIOS CHECADOS'] = XLSX.utils.json_to_sheet([]);
     wb.SheetNames.push('PRECIOS CHECADOS');
     return;
   }
-
-  // 3. Armar array con los docs
   const preciosChecadosArray = [];
   snapshot.forEach(doc => {
     const data = doc.data();
@@ -114,14 +143,12 @@ async function reconstruirHojaPreciosChecados(fileId, wb) {
       SACAR_ETIQUETAS: data.SACAR_ETIQUETAS || 'NO'
     });
   });
-
-  // 4. Crear la hoja con esos datos
   const sheet = XLSX.utils.json_to_sheet(preciosChecadosArray);
   wb.Sheets['PRECIOS CHECADOS'] = sheet;
   wb.SheetNames.push('PRECIOS CHECADOS');
 }
 
-// ========== RENDERIZAR ARCHIVOS ==========
+// ========== RENDERIZAR LISTA DE ARCHIVOS ==========
 function renderFileSelectOptions(archivos) {
   const fileListContainer = document.getElementById('fileListContainer');
   if (!fileListContainer) return;
@@ -131,15 +158,20 @@ function renderFileSelectOptions(archivos) {
     fileListContainer.innerHTML = '<p class="text-muted">No hay archivos disponibles.</p>';
     return;
   }
+  // Obtener el filtro seleccionado (boss)
+  const bossFilter = bossFilterSelect ? bossFilterSelect.value : "Todos";
 
   archivos.forEach(fileObj => {
+    // Si se seleccionó un jefe distinto a "Todos", solo mostrar archivos que tengan ese jefe
+    if (bossFilter !== "Todos" && fileObj.boss !== bossFilter) return;
+
     const fileItem = document.createElement('div');
     fileItem.className = 'list-group-item d-flex justify-content-between align-items-center flex-wrap';
 
     const fileInfo = document.createElement('div');
     fileInfo.className = 'mb-2 mb-md-0';
-    fileInfo.textContent = fileObj.name;
-
+    fileInfo.textContent = fileObj.name + (fileObj.boss ? ` [${fileObj.boss}]` : '');
+    
     const buttonsDiv = document.createElement('div');
 
     // Botón de selección
@@ -157,7 +189,7 @@ function renderFileSelectOptions(archivos) {
     });
     buttonsDiv.appendChild(selectBtn);
 
-    // Botón eliminar (admin)
+    // Botón eliminar (solo Admins)
     if (isAdminGlobal) {
       const deleteBtn = document.createElement('button');
       deleteBtn.type = 'button';
@@ -175,14 +207,19 @@ function renderFileSelectOptions(archivos) {
   });
 }
 
-// ========== CARGAR LISTA DE ARCHIVOS ==========
+// ========== CARGAR ARCHIVOS DESDE FIRESTORE ==========
 async function cargarArchivosDesdeFirestore() {
   try {
     const querySnapshot = await db.collection('files').orderBy('uploadedAt', 'desc').get();
     const archivos = [];
     querySnapshot.forEach(doc => {
       const data = doc.data();
-      archivos.push({ id: doc.id, name: data.name, url: data.url });
+      archivos.push({ 
+        id: doc.id, 
+        name: data.name, 
+        url: data.url,
+        boss: data.boss || "SinJefe"
+      });
     });
     renderFileSelectOptions(archivos);
   } catch (error) {
@@ -191,7 +228,7 @@ async function cargarArchivosDesdeFirestore() {
   }
 }
 
-// ========== ELIMINAR ARCHIVO + SUBCOLECCION ==========
+// ========== ELIMINAR ARCHIVO ==========
 async function eliminarArchivoSeleccionado(fileId) {
   try {
     const fileDoc = await db.collection('files').doc(fileId).get();
@@ -202,7 +239,7 @@ async function eliminarArchivoSeleccionado(fileId) {
     const fileData = fileDoc.data();
     const fileUrl = fileData.url;
 
-    // Eliminar subcoleccion 'prices_checked'
+    // Eliminar subcolección 'prices_checked'
     const pricesCheckedRef = db.collection('files').doc(fileId).collection('prices_checked');
     const snapshot = await pricesCheckedRef.get();
     if (!snapshot.empty) {
@@ -211,7 +248,7 @@ async function eliminarArchivoSeleccionado(fileId) {
       await batch.commit();
     }
 
-    // Eliminar doc principal
+    // Eliminar el documento principal
     await db.collection('files').doc(fileId).delete();
 
     // Eliminar archivo en Storage
@@ -227,7 +264,7 @@ async function eliminarArchivoSeleccionado(fileId) {
     });
     cargarArchivosDesdeFirestore();
 
-    // Si era el archivo seleccionado
+    // Si el archivo eliminado era el seleccionado
     if (selectedFileIdGlobal === fileId) {
       selectedFileIdGlobal = null;
       workbook = null;
@@ -235,8 +272,6 @@ async function eliminarArchivoSeleccionado(fileId) {
       descargarBtn.disabled = true;
       selectedFileName.textContent = 'No se ha seleccionado ningún archivo.';
       loadFileBtn.disabled = true;
-
-      // Desuscribir la escucha de prices_checked
       if (unsubscribePricesChecked) {
         unsubscribePricesChecked();
         unsubscribePricesChecked = null;
@@ -244,11 +279,7 @@ async function eliminarArchivoSeleccionado(fileId) {
     }
   } catch (error) {
     console.error('Error al eliminar archivo:', error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: `No se pudo eliminar el archivo. ${error.message}`
-    });
+    Swal.fire({ icon: 'error', title: 'Error', text: `No se pudo eliminar el archivo. ${error.message}` });
   }
 }
 
@@ -288,6 +319,16 @@ function handleFile(file) {
     return;
   }
 
+  // Si el usuario es admin y se muestra la sección de subida, verificar que se haya seleccionado un jefe
+  let boss = "SinJefe";
+  if (isAdminGlobal) {
+    boss = bossUploadSelect ? bossUploadSelect.value : "";
+    if (!boss) {
+      Swal.fire({ icon: "warning", title: "Falta Jefe", text: "Selecciona el jefe para este archivo." });
+      return;
+    }
+  }
+
   const storageRef = storage.ref();
   const filePath = `uploads/${Date.now()}_${file.name}`;
   const fileRef = storageRef.child(filePath);
@@ -302,6 +343,7 @@ function handleFile(file) {
         url: downloadURL,
         uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
         uploadedBy: user.uid,
+        boss: boss
       });
     })
     .then(() => {
@@ -348,6 +390,7 @@ skuInput.addEventListener('input', () => {
 });
 
 // ========== FORMULARIO SKU (VERIFICAR) ==========
+// Un único event listener para procesar el SKU
 skuForm.addEventListener('submit', async function (event) {
   event.preventDefault();
   const valorSku = skuInput.value.trim().toUpperCase();
@@ -356,6 +399,7 @@ skuForm.addEventListener('submit', async function (event) {
     Swal.fire({ icon: 'warning', title: 'Aviso', text: 'Ingresa un SKU válido.' });
     return;
   }
+
   if (!workbook || !workbook.Sheets['DATOS']) {
     Swal.fire({ icon: 'error', title: 'Error', text: 'No se ha cargado la hoja DATOS.' });
     return;
@@ -363,18 +407,18 @@ skuForm.addEventListener('submit', async function (event) {
 
   const datosSheet = workbook.Sheets['DATOS'];
   const datosJson = XLSX.utils.sheet_to_json(datosSheet);
-  
-  // Ajusta a tu encabezado EXACTO
+
+  // Buscar el SKU EXACTO (ajusta el nombre de la columna si es necesario)
   const item = datosJson.find(row =>
     row.SKU && row.SKU.toString().trim().toUpperCase() === valorSku
   );
+
   if (!item) {
     Swal.fire({ icon: 'error', title: 'SKU no encontrado', text: `El SKU ${valorSku} no está en la hoja DATOS.` });
     skuInput.value = '';
     return;
   }
 
-  // Ojo: la columna en tu Excel debe llamarse EXACTAMENTE "PRECIO"
   const descripcion = item.DESCRIPCION || 'Sin descripción';
   const piezas = item.PIEZAS || 'N/A';
   const precio = item.PRECIO || 'Sin precio';
@@ -384,23 +428,26 @@ skuForm.addEventListener('submit', async function (event) {
     return;
   }
 
-  const priceCheckRef = db.collection('files').doc(selectedFileIdGlobal).collection('prices_checked').doc(valorSku);
+  const priceCheckRef = db
+    .collection('files')
+    .doc(selectedFileIdGlobal)
+    .collection('prices_checked')
+    .doc(valorSku);
+
   const priceCheckDoc = await priceCheckRef.get();
   if (priceCheckDoc.exists) {
     const data = priceCheckDoc.data();
     Swal.fire({
       icon: 'info',
       title: 'SKU ya verificado',
-      text: `El SKU ${valorSku} ya fue verificado.
-Precio: $${data.PRECIO}.
-No es necesario volver a marcarlo.`
+      text: `El SKU ${valorSku} ya fue verificado. Precio: $${data.PRECIO}.`
     });
     skuInput.value = '';
     return;
   }
 
-  // Preguntar si el precio está correcto
-  const confirm = await Swal.fire({
+  // Mostrar alerta para confirmar si el precio en la etiqueta es correcto o no
+  const confirmResult = await Swal.fire({
     title: 'Verificar Precio',
     html: `
       <p><strong>SKU:</strong> ${valorSku}</p>
@@ -416,12 +463,10 @@ No es necesario volver a marcarlo.`
     cancelButtonText: 'No, está mal'
   });
 
-  let sacarEtiquetas = 'NO';
-  if (!confirm.isConfirmed) {
-    sacarEtiquetas = 'SI';
-  }
+  // Si el usuario confirma, se registra que el precio es correcto; de lo contrario, se registra como incorrecto
+  let sacarEtiquetas = confirmResult.isConfirmed ? 'NO' : 'SI';
 
-  // Guardar en Firestore
+  // Registrar el SKU en la subcolección "prices_checked"
   await priceCheckRef.set({
     SKU: valorSku,
     DESCRIPCION: descripcion,
@@ -431,20 +476,19 @@ No es necesario volver a marcarlo.`
     FECHA_REGISTRO: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  // Reconstruir o actualizar la hoja PRECIOS CHECADOS en memoria
-  // Eliminamos y la volvemos a crear con datos de Firestore
+  // Reconstruir (o actualizar) la hoja "PRECIOS CHECADOS" en el workbook
   await reconstruirHojaPreciosChecados(selectedFileIdGlobal, workbook);
 
   Swal.fire({
     icon: 'success',
     title: 'Artículo Verificado',
-    text: `El SKU ${valorSku} se registró correctamente.
-SACAR_ETIQUETAS = ${sacarEtiquetas}`
+    text: `El SKU ${valorSku} se registró correctamente. SACAR_ETIQUETAS = ${sacarEtiquetas}`
   });
+
   skuInput.value = '';
 });
 
-// ========== FUNCIÓN CARGAR WORKBOOK Y RECONSTRUIR DESDE FIRESTORE ==========
+// ========== CARGAR WORKBOOK DESDE ARRAYBUFFER ==========
 async function loadWorkbookFromArrayBuffer(arrayBuffer, fileId) {
   if (!arrayBuffer) {
     Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo obtener el archivo.' });
@@ -455,36 +499,25 @@ async function loadWorkbookFromArrayBuffer(arrayBuffer, fileId) {
       throw new Error('El archivo está vacío.');
     }
 
-    // Parsear con XLSX
     const bytes = new Uint8Array(arrayBuffer.slice(0, 4));
     const header = String.fromCharCode(...bytes);
     if (!header.startsWith('PK')) {
       throw new Error('El archivo no parece ser un archivo Excel válido.');
     }
 
-    // Leer
     const newWorkbook = XLSX.read(arrayBuffer, { type: 'array' });
 
-    // Verificar hoja DATOS
     if (!newWorkbook.Sheets['DATOS']) {
       Swal.fire({ icon: 'error', title: 'Error', text: 'No existe la hoja "DATOS" en el Excel.' });
       return null;
     }
 
-    // Reconstruir PRECIOS CHECADOS desde Firestore
     await reconstruirHojaPreciosChecados(fileId, newWorkbook);
-
-    // Asignar a la variable global workbook
     workbook = newWorkbook;
-
     seccionRegistro.style.display = '';
     descargarBtn.disabled = false;
 
-    Swal.fire({
-      icon: 'success',
-      title: 'Archivo Cargado',
-      text: 'El archivo Excel se cargó correctamente.'
-    });
+    Swal.fire({ icon: 'success', title: 'Archivo Cargado', text: 'El archivo Excel se cargó correctamente.' });
     return newWorkbook;
   } catch (error) {
     console.error('Error al parsear Excel:', error);
@@ -493,7 +526,7 @@ async function loadWorkbookFromArrayBuffer(arrayBuffer, fileId) {
   }
 }
 
-// ========== BOTÓN DESCARGAR (SOBRESCRIBIR) ==========
+// ========== BOTÓN DESCARGAR ==========
 if (descargarBtn) {
   descargarBtn.addEventListener('click', async function () {
     if (!selectedFileIdGlobal) {
@@ -504,13 +537,9 @@ if (descargarBtn) {
       Swal.fire({ icon: 'error', title: 'Error', text: 'No hay ningún libro de Excel cargado.' });
       return;
     }
-
     try {
-      // Generar array del workbook actualizado
       const workbookOut = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([workbookOut], { type: 'application/octet-stream' });
-
-      // Obtener el documento del archivo seleccionado
       const fileDoc = await db.collection("files").doc(selectedFileIdGlobal).get();
       if (!fileDoc.exists) {
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se encontró el archivo en Firestore.' });
@@ -519,29 +548,16 @@ if (descargarBtn) {
       const fileData = fileDoc.data();
       const originalUrl = fileData.url;
       const storageRef = storage.refFromURL(originalUrl);
-
-      // Subir el archivo actualizado a Storage
       await storageRef.put(blob);
       const updatedDownloadUrl = await storageRef.getDownloadURL();
-
-      // Actualizar la URL en Firestore
-      await db.collection("files").doc(selectedFileIdGlobal).update({
-        url: updatedDownloadUrl
-      });
-
-      // Descargar el archivo localmente
+      await db.collection("files").doc(selectedFileIdGlobal).update({ url: updatedDownloadUrl });
       const localUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = localUrl;
       a.download = 'precios_checados_actualizado.xlsx';
       a.click();
       URL.revokeObjectURL(localUrl);
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Archivo Actualizado',
-        text: 'Se subió y descargó la versión actual con PRECIOS CHECADOS.'
-      });
+      Swal.fire({ icon: 'success', title: 'Archivo Actualizado', text: 'El archivo se actualizó y descargó correctamente.' });
     } catch (error) {
       console.error('Error al subir/descargar Excel:', error);
       Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el archivo.' });
@@ -557,22 +573,15 @@ if (loadFileBtn) {
       return;
     }
     try {
-      // Descargar el documento del archivo seleccionado
       const doc = await db.collection('files').doc(selectedFileIdGlobal).get();
       if (!doc.exists) {
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se encontró el archivo en la lista.' });
         return;
       }
       const data = doc.data();
-      
-      // Reiniciar el workbook
       workbook = null;
       const arrayBuffer = await base64ToArrayBufferFromURL(data.url);
-
-      // Cargar y reconstruir el workbook
       await loadWorkbookFromArrayBuffer(arrayBuffer, selectedFileIdGlobal);
-
-      // Configurar la escucha en tiempo real para la subcolección prices_checked
       await setupPricesCheckedListener(selectedFileIdGlobal);
     } catch (error) {
       console.error('Error al cargar el archivo:', error);
@@ -581,7 +590,7 @@ if (loadFileBtn) {
   });
 }
 
-// ========== MANEJO DEL MODAL (confirmar selección) ==========
+// ========== BOTÓN "CONFIRMAR SELECCIÓN DE ARCHIVO" EN MODAL ==========
 if (confirmFileSelection) {
   confirmFileSelection.addEventListener('click', () => {
     if (!selectedFileIdGlobal) {
@@ -591,11 +600,8 @@ if (confirmFileSelection) {
     const activeItem = document.querySelector('.list-group-item.active');
     const fileName = activeItem ? activeItem.querySelector('div').textContent : 'No seleccionado';
     selectedFileName.textContent = fileName;
-
-    // Cerrar modal (Bootstrap)
     const fileSelectionModal = bootstrap.Modal.getInstance(document.getElementById('fileSelectionModal'));
     if (fileSelectionModal) fileSelectionModal.hide();
-
     loadFileBtn.disabled = false;
   });
 }
@@ -605,9 +611,7 @@ logoutButton.addEventListener("click", () => {
   auth.signOut()
     .then(() => {
       Swal.fire("Sesión cerrada", "Has cerrado sesión correctamente.", "success")
-        .then(() => {
-          window.location.href = "login.html"; 
-        });
+        .then(() => { window.location.href = "login.html"; });
     })
     .catch((error) => {
       Swal.fire("Error al cerrar sesión", error.message, "error");
@@ -617,13 +621,14 @@ logoutButton.addEventListener("click", () => {
 // ========== onAuthStateChanged ==========
 auth.onAuthStateChanged(async (user) => {
   if (user) {
-    console.log(`UID del usuario autenticado: ${user.uid}`);
+    console.log(`Usuario autenticado: ${user.uid}`);
     await cargarArchivosDesdeFirestore();
-    console.log(`Usuario autenticado: ${user.email}`);
-
     isAdminGlobal = adminUIDs.includes(user.uid);
-    if (isAdminGlobal) mostrarSeccionesAdmin();
-    else mostrarSeccionesUsuario();
+    if (isAdminGlobal) {
+      mostrarSeccionesAdmin();
+    } else {
+      mostrarSeccionesUsuario();
+    }
   } else {
     Swal.fire({
       icon: "warning",
@@ -636,19 +641,14 @@ auth.onAuthStateChanged(async (user) => {
   }
 });
 
-// ========== Exponer la Función de Eliminación Globalmente (Opcional) ==========
+// ========== EXPOSICIÓN OPCIONAL DE FUNCIONES ==========
 window.deleteAdminFile = eliminarArchivoSeleccionado;
 
-// ========== FUNCIONES DE ESCUCHA EN TIEMPO REAL ==========
-let unsubscribePricesChecked = null;
-
+// ========== LISTA DE ARCHIVOS EN TIEMPO REAL (subcolección 'prices_checked') ==========
 async function setupPricesCheckedListener(fileId) {
-  if (unsubscribePricesChecked) {
-    unsubscribePricesChecked();
-  }
-
+  if (unsubscribePricesChecked) unsubscribePricesChecked();
   unsubscribePricesChecked = db.collection('files').doc(fileId).collection('prices_checked')
-    .onSnapshot(async (snapshot) => {
+    .onSnapshot(snapshot => {
       const preciosChecadosArray = [];
       snapshot.forEach(doc => {
         const data = doc.data();
@@ -666,33 +666,15 @@ async function setupPricesCheckedListener(fileId) {
         const sheet = XLSX.utils.json_to_sheet(preciosChecadosArray);
         workbook.Sheets['PRECIOS CHECADOS'] = sheet;
         workbook.SheetNames.push('PRECIOS CHECADOS');
-        console.log('Hoja PRECIOS CHECADOS actualizada en el workbook.');
-
-        // Opcional: Notificar al usuario de la actualización
-        Swal.fire({
-          icon: 'info',
-          title: 'Actualización',
-          text: 'El archivo ha sido actualizado con las últimas verificaciones.'
-        });
+        console.log('Hoja PRECIOS CHECADOS actualizada.');
+        Swal.fire({ icon: 'info', title: 'Actualización', text: 'El archivo se actualizó con las últimas verificaciones.' });
       }
-    }, (error) => {
+    }, error => {
       console.error('Error en listener de prices_checked:', error);
     });
 }
 
-// ========== BOTÓN LOGOUT ==========
-logoutButton.addEventListener("click", () => {
-  auth.signOut()
-    .then(() => {
-      Swal.fire("Sesión cerrada", "Has cerrado sesión correctamente.", "success")
-        .then(() => {
-          window.location.href = "login.html";
-        });
-    })
-    .catch((error) => {
-      Swal.fire("Error al cerrar sesión", error.message, "error");
-    });
-});
-
-
-
+// ========== CAMBIOS EN REGISTRO DE ARCHIVOS ==========
+if (bossFilterSelect) {
+  bossFilterSelect.addEventListener('change', cargarArchivosDesdeFirestore);
+}
